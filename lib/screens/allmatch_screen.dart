@@ -18,7 +18,6 @@ class AllMatchScreen extends StatefulWidget {
 }
 
 class _AllMatchScreenState extends State<AllMatchScreen> {
-  final _controller = new TextEditingController();
   MatchBloc matchBloc = MatchBloc();
   MatchInfo matchInfo = MatchInfo();
   var allMatch = [];

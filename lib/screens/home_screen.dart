@@ -2,11 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rosterz/blocs/match_bloc.dart';
 import 'package:rosterz/blocs/user_bloc.dart';
 import 'package:rosterz/drawer.dart';
 import 'package:rosterz/main.dart';
+import 'package:rosterz/models/match_info.dart';
 import 'package:rosterz/models/user_info.dart';
-import 'package:rosterz/payment.dart';
 import 'package:rosterz/screens/game_screen.dart';
 import 'package:rosterz/screens/host_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -33,6 +34,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<String> gameNo = ["PUBG", "BGMI", "FREEFIRE", "COD", "PUBGLITE"];
   var fcmToken;
+  var matchIDs;
+  bool isNotification = false;
+  UserBloc userBloc = UserBloc();
+  UserInfo userInfo = UserInfo();
+  MatchBloc notiBloc = MatchBloc();
+  MatchInfo notiInfo = MatchInfo();
+  Future<void> getuser() async {
+    userInfo.actions = "getinfo";
+    userInfo.userID = userID;
+    userBloc.eventSink.add(userInfo);
+  }
+
   Future<void> saveFcmToken() async {
     var fcm = await FirebaseMessaging.instance.getToken();
     if (fcmToken != fcm) {
@@ -51,11 +64,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     saveFcmToken();
+    getuser();
   }
 
   @override
   Widget build(BuildContext context) {
-    print(fcmToken);
     toppad = MediaQuery.of(context).padding.top.ceil();
     bottompad = MediaQuery.of(context).padding.bottom.ceil();
     return SafeArea(
@@ -109,6 +122,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         Column(
           children: <Widget>[
+            StreamBuilder(
+                stream: userBloc.userStream,
+                builder: (ctx, sss) {
+                  if (sss.hasData) {
+                    if (sss.data['success']) {
+                      matchIDs = sss.data['msz'][0]['matchJoined'] +
+                          sss.data['msz'][0]['matchHosted'];
+                    }
+                  }
+                  return SizedBox();
+                }),
             Container(
               alignment: Alignment.topCenter,
               margin: EdgeInsets.only(top: 10.h, left: 10.w, right: 10.w),
@@ -143,17 +167,36 @@ class _HomeScreenState extends State<HomeScreen> {
                         fontSize: 24.sp,
                         fontWeight: FontWeight.w300),
                   ),
-                  IconButton(
-                      icon: Icon(
-                        Icons.notifications_rounded,
-                        color: Colors.white,
-                        size: 20.w,
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (BuildContext context) =>
-                                NotificationScreen()));
-                      })
+                  StreamBuilder(
+                      stream: notiBloc.matchStream,
+                      builder: (ctx, snapshot) {
+                        notiInfo.actions = "getnotification";
+                        notiInfo.matchIDs = matchIDs;
+                        notiBloc.eventSink.add(notiInfo);
+                        if (snapshot.hasData) {
+                          if (snapshot.data['success']) {
+                            if (notificationCount !=
+                                snapshot.data['msz'].length) {
+                              isNotification = true;
+                            }
+                          }
+                        }
+                        return IconButton(
+                            icon: Icon(
+                              isNotification
+                                  ? Icons.notifications_active_rounded
+                                  : Icons.notifications_rounded,
+                              color: isNotification
+                                  ? Colors.amberAccent
+                                  : Colors.white,
+                              size: isNotification ? 30.w : 20.w,
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      NotificationScreen()));
+                            });
+                      }),
                 ],
               ),
             ),

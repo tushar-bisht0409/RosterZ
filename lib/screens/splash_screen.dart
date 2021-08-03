@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rosterz/blocs/user_bloc.dart';
 import 'package:rosterz/main.dart';
-import 'package:rosterz/models/user_info.dart';
 import 'package:rosterz/screens/auth_screen.dart';
 import 'package:rosterz/screens/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';

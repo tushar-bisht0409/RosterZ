@@ -23,6 +23,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
   SharedPreferences prefs;
   bool isLoaded = false;
   var matchIDs;
+  int tempCount;
   Future<void> getnoti() async {
     prefs = await SharedPreferences.getInstance();
     userInfo.actions = "getinfo";
@@ -33,7 +34,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   void initState() {
     super.initState();
-
     getnoti();
   }
 
@@ -104,7 +104,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           ),
                         );
                       }
-                      if (notificationCount < snapshot.data['msz'].length) {
+                      tempCount = snapshot.data['msz'].length;
+                      if (notificationCount != snapshot.data['msz'].length) {
                         prefs.setInt(
                             'notificationCount', snapshot.data['msz'].length);
                       }
@@ -122,7 +123,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                     // vertical: 10.h,
                                     // horizontal: 20.w
                                     ),
-                                color: index < notificationCount
+                                color: snapshot.data['msz'].length - 1 - index <
+                                        notificationCount
                                     ? Colors.black
                                     : Colors.white12,
                                 child: Column(
@@ -162,15 +164,22 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                               width: 5.w,
                                             ),
                                             Icon(
-                                              index < notificationCount
+                                              snapshot.data['msz'].length -
+                                                          1 -
+                                                          index <
+                                                      notificationCount
                                                   ? Icons
                                                       .notifications_none_rounded
                                                   : Icons
                                                       .notifications_active_rounded,
                                               size: 15.h,
-                                              color: index < notificationCount
-                                                  ? Colors.deepPurple
-                                                  : Colors.pink,
+                                              color:
+                                                  snapshot.data['msz'].length -
+                                                              1 -
+                                                              index <
+                                                          notificationCount
+                                                      ? Colors.deepPurple
+                                                      : Colors.pink,
                                             )
                                           ],
                                         )),

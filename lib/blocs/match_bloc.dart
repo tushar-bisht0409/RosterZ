@@ -96,7 +96,6 @@ class MatchBloc {
           response = await dio.get(serverURl + '/getresult', queryParameters: {
             "matchID": event.matchID,
           });
-          print('yoo');
         } else if (event.actions == "sendnotification") {
           var notificationData = {
             "matchID": event.matchID,
@@ -115,7 +114,6 @@ class MatchBloc {
               await dio.get(serverURl + '/getnotification', queryParameters: {
             "matchIDs": event.matchIDs,
           });
-          print('yoo');
         }
       } on Error catch (e) {
         print(e);

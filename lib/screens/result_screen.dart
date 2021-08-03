@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rosterz/blocs/match_bloc.dart';
 import 'package:rosterz/blocs/user_bloc.dart';
-import 'package:rosterz/main.dart';
 import 'package:rosterz/models/match_info.dart';
 import 'package:rosterz/models/user_info.dart';
 

@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rosterz/blocs/match_bloc.dart';
 import 'package:rosterz/main.dart';
 import 'package:rosterz/models/match_info.dart';
-import 'package:rosterz/screens/match_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   static const routeName = '/search';

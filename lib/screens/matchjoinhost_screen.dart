@@ -13,7 +13,7 @@ class MatchJoinHostScreen extends StatefulWidget {
 }
 
 class _MatchJoinHostScreenState extends State<MatchJoinHostScreen> {
-  final _controller = new TextEditingController();
+  //final _controller = new TextEditingController();
   UserBloc userBloc = UserBloc();
   UserInfo userInfo = UserInfo();
   UserBloc matchBloc = UserBloc();

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rosterz/main.dart';
 import 'package:rosterz/screens/allmatch_screen.dart';
-import 'package:rosterz/screens/search_screen.dart';
 
 class GameScreen extends StatefulWidget {
   static const routeName = '/game';
