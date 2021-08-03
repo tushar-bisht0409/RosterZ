@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "565546191792",
+    "project_id": "rosterz-dbbca",
+    "storage_bucket": "rosterz-dbbca.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:565546191792:android:cec6fb9f406aed705e6475",
+        "android_client_info": {
+          "package_name": "com.inso.rosterz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "565546191792-fqh879l73nlgb4i2nesn49k8uifi3mn8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIsCfvVnZavqA7MAqiUNSpSGKJFmSSnkg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "565546191792-fqh879l73nlgb4i2nesn49k8uifi3mn8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
