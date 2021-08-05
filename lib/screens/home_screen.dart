@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rosterz/blocs/match_bloc.dart';
@@ -14,15 +15,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:rosterz/screens/notification_screen.dart';
 
 var gameImg = {
-  "PUBG": "https://images-na.ssl-images-amazon.com/images/I/51rkz8wallL.jpg",
-  "BGMI":
-      "https://cdn.insidesport.co/wp-content/uploads/2021/05/06142549/PUBG-Mobile-Tencent-Ban-2.jpg",
-  "FREEFIRE":
-      "https://venturebeat.com/wp-content/uploads/2020/05/Garena-Free-Fire.jpg?w=1200&strip=all",
-  "COD":
-      "https://staticg.sportskeeda.com/editor/2019/09/01cd6-15692379200287-800.jpg",
-  "PUBGLITE":
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSW8dS7JtFYfvFEGsv2ES5ZKwPtryV29S8xIUrAQTyiKcNYXAuR7WuP-N9AMaVHrvNA5cc&usqp=CAU"
+  "PUBG": "assets/images/PUBG.png",
+  "BGMI": "assets/images/BGMI.png",
+  "FREEFIRE": "assets/images/FREEFIRE.png",
+  "COD": "assets/images/COD.png",
+  "PUBGLITE": "assets/images/PUBGLITE.png"
 };
 
 class HomeScreen extends StatefulWidget {
@@ -40,6 +37,9 @@ class _HomeScreenState extends State<HomeScreen> {
   UserInfo userInfo = UserInfo();
   MatchBloc notiBloc = MatchBloc();
   MatchInfo notiInfo = MatchInfo();
+  AdmobInterstitial interstitialAd;
+  bool noAd = false;
+  int adCount = 0;
   Future<void> getuser() async {
     userInfo.actions = "getinfo";
     userInfo.userID = userID;
@@ -61,10 +61,71 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  createAd() {
+    interstitialAd = AdmobInterstitial(
+      adUnitId: 'ca-app-pub-8553679955744021/8717306381',
+      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+        switch (event) {
+          case AdmobAdEvent.loaded:
+            print('New Admob Ad loaded!');
+
+            break;
+          case AdmobAdEvent.opened:
+            print('Admob Ad opened!');
+            break;
+          case AdmobAdEvent.closed:
+            print('Admob Ad closed!');
+            interstitialAd.load();
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => NotificationScreen()));
+            break;
+          case AdmobAdEvent.failedToLoad:
+            print('Admob failed to load. :(');
+            if (mounted) {
+              setState(() {
+                adCount++;
+              });
+            }
+            if (adCount < 4) {
+              createAd();
+            } else {
+              if (mounted) {
+                setState(() {
+                  noAd = true;
+                });
+              }
+            }
+            break;
+          case AdmobAdEvent.clicked:
+            print('Admob Ad Clicked');
+            break;
+          case AdmobAdEvent.completed:
+            print('Admob Ad Completed');
+            break;
+          case AdmobAdEvent.impression:
+            print('Admob Ad Impression');
+            break;
+          case AdmobAdEvent.leftApplication:
+            break;
+          case AdmobAdEvent.started:
+            print('Admob Ad Started');
+            break;
+          case AdmobAdEvent.rewarded:
+            print('Admob Ad Rewarded');
+            break;
+          default:
+            print("ggg");
+        }
+      },
+    );
+    interstitialAd.load();
+  }
+
   void initState() {
     super.initState();
     saveFcmToken();
     getuser();
+    createAd();
   }
 
   @override
@@ -80,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Container(
             margin: EdgeInsets.only(
                 top: ScreenUtil().setHeight(10),
+                bottom: 20.h,
                 right: ScreenUtil().setWidth(103),
                 left: ScreenUtil().setWidth(103)),
             height: 50.h,
@@ -113,10 +175,10 @@ class _HomeScreenState extends State<HomeScreen> {
         Container(
           height: double.infinity,
           width: double.infinity,
-          child: Image.network(
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_oTrNIdMXgwyLxCYT9EckHlXQxjx-AHopE9kbER-PT01uYMJDHHVrrio6BXjWzh-pBg8&usqp=CAU",
+          child: Image.asset(
+            "assets/images/Background.png",
             fit: BoxFit.cover,
-            color: Colors.pink,
+            color: Colors.black.withOpacity(0.8),
             colorBlendMode: BlendMode.darken,
           ),
         ),
@@ -191,10 +253,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                   : Colors.white,
                               size: isNotification ? 30.w : 20.w,
                             ),
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      NotificationScreen()));
+                            onPressed: () async {
+                              if (noAd) {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (BuildContext context) =>
+                                        NotificationScreen()));
+                              } else {
+                                if (await interstitialAd.isLoaded) {
+                                  interstitialAd.show();
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          backgroundColor: Colors.deepPurple,
+                                          content: Text("Loading...")));
+                                }
+                              }
                             });
                       }),
                 ],
@@ -229,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(15.h)),
                                   image: DecorationImage(
-                                      image: NetworkImage(
+                                      image: AssetImage(
                                           gameImg["${gameNo[index]}"]),
                                       fit: BoxFit.cover)),
                             )),

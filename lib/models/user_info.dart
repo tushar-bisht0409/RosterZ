@@ -6,6 +6,8 @@ class UserInfo {
   String money;
   String type;
   String actions;
+  String matchID;
+  String feedback;
   List<dynamic> matchIDs;
   List<dynamic> userIDs;
   List<dynamic> matchJoined;

@@ -1,3 +1,4 @@
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rosterz/main.dart';
@@ -13,9 +14,88 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   final _controller = new TextEditingController();
+  AdmobInterstitial interstitialAd;
+  bool noAd = false;
+  int adCount = 0;
+  String searchType;
+  createAd() {
+    interstitialAd = AdmobInterstitial(
+      adUnitId: 'ca-app-pub-8553679955744021/8717306381',
+      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+        switch (event) {
+          case AdmobAdEvent.loaded:
+            print('New Admob Ad loaded!');
+
+            break;
+          case AdmobAdEvent.opened:
+            print('Admob Ad opened!');
+            break;
+          case AdmobAdEvent.closed:
+            print('Admob Ad closed!');
+            interstitialAd.load();
+            if (searchType == 'matchID') {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (BuildContext context) => AllMatchScreen(
+                      widget.gameName, "", "matchID", _controller.text, "")));
+            } else if (searchType == 'organizer') {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (BuildContext context) => AllMatchScreen(
+                      widget.gameName, "", "organizer", "", _controller.text)));
+            } else if (searchType == 'game') {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (BuildContext context) =>
+                      AllMatchScreen(_controller.text, "", "game", "", "")));
+            }
+            break;
+          case AdmobAdEvent.failedToLoad:
+            print('Admob failed to load. :(');
+            if (mounted) {
+              setState(() {
+                adCount++;
+              });
+            }
+            if (adCount < 4) {
+              createAd();
+            } else {
+              if (mounted) {
+                setState(() {
+                  noAd = true;
+                });
+              }
+            }
+            break;
+          case AdmobAdEvent.clicked:
+            print('Admob Ad Clicked');
+            break;
+          case AdmobAdEvent.completed:
+            print('Admob Ad Completed');
+            break;
+          case AdmobAdEvent.impression:
+            print('Admob Ad Impression');
+            break;
+          case AdmobAdEvent.leftApplication:
+            break;
+          case AdmobAdEvent.started:
+            print('Admob Ad Started');
+            break;
+          case AdmobAdEvent.rewarded:
+            print('Admob Ad Rewarded');
+            break;
+          default:
+            print("ggg");
+        }
+      },
+    );
+    interstitialAd.load();
+  }
+
   @override
   void initState() {
     super.initState();
+    createAd();
   }
 
   @override
@@ -231,18 +311,41 @@ class _GameScreenState extends State<GameScreen> {
                                                       fontWeight:
                                                           FontWeight.w700)),
                                             ]),
-                                            onTap: () {
-                                              Navigator.of(context).pop();
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (BuildContext
-                                                              context) =>
-                                                          AllMatchScreen(
-                                                              widget.gameName,
-                                                              "",
-                                                              "matchID",
-                                                              _controller.text,
-                                                              "")));
+                                            onTap: () async {
+                                              if (mounted) {
+                                                setState(() {
+                                                  searchType = 'matchID';
+                                                });
+                                                if (noAd) {
+                                                  Navigator.of(context).pop();
+                                                  Navigator.of(context).push(
+                                                      MaterialPageRoute(
+                                                          builder: (BuildContext
+                                                                  context) =>
+                                                              AllMatchScreen(
+                                                                  widget
+                                                                      .gameName,
+                                                                  "",
+                                                                  "matchID",
+                                                                  _controller
+                                                                      .text,
+                                                                  "")));
+                                                } else {
+                                                  if (await interstitialAd
+                                                      .isLoaded) {
+                                                    interstitialAd.show();
+                                                  } else {
+                                                    ScaffoldMessenger
+                                                            .of(context)
+                                                        .showSnackBar(SnackBar(
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .deepPurple,
+                                                            content: Text(
+                                                                "Loading...")));
+                                                  }
+                                                }
+                                              }
                                             },
                                           ),
                                           GestureDetector(
@@ -258,19 +361,41 @@ class _GameScreenState extends State<GameScreen> {
                                                       fontWeight:
                                                           FontWeight.w700)),
                                             ]),
-                                            onTap: () {
-                                              Navigator.of(context).pop();
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (BuildContext
-                                                              context) =>
-                                                          AllMatchScreen(
-                                                              widget.gameName,
-                                                              "",
-                                                              "organizer",
-                                                              "",
-                                                              _controller
-                                                                  .text)));
+                                            onTap: () async {
+                                              if (mounted) {
+                                                setState(() {
+                                                  searchType = 'organizer';
+                                                });
+                                                if (noAd) {
+                                                  Navigator.of(context).pop();
+                                                  Navigator.of(context).push(
+                                                      MaterialPageRoute(
+                                                          builder: (BuildContext
+                                                                  context) =>
+                                                              AllMatchScreen(
+                                                                  widget
+                                                                      .gameName,
+                                                                  "",
+                                                                  "organizer",
+                                                                  "",
+                                                                  _controller
+                                                                      .text)));
+                                                } else {
+                                                  if (await interstitialAd
+                                                      .isLoaded) {
+                                                    interstitialAd.show();
+                                                  } else {
+                                                    ScaffoldMessenger
+                                                            .of(context)
+                                                        .showSnackBar(SnackBar(
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .deepPurple,
+                                                            content: Text(
+                                                                "Loading...")));
+                                                  }
+                                                }
+                                              }
                                             },
                                           ),
                                           GestureDetector(
@@ -286,18 +411,40 @@ class _GameScreenState extends State<GameScreen> {
                                                       fontWeight:
                                                           FontWeight.w700)),
                                             ]),
-                                            onTap: () {
-                                              Navigator.of(context).pop();
-                                              Navigator.of(context).push(
-                                                  MaterialPageRoute(
-                                                      builder: (BuildContext
-                                                              context) =>
-                                                          AllMatchScreen(
-                                                              _controller.text,
-                                                              "",
-                                                              "game",
-                                                              "",
-                                                              "")));
+                                            onTap: () async {
+                                              if (mounted) {
+                                                setState(() {
+                                                  searchType = 'game';
+                                                });
+                                                if (noAd) {
+                                                  Navigator.of(context).pop();
+                                                  Navigator.of(context).push(
+                                                      MaterialPageRoute(
+                                                          builder: (BuildContext
+                                                                  context) =>
+                                                              AllMatchScreen(
+                                                                  _controller
+                                                                      .text,
+                                                                  "",
+                                                                  "game",
+                                                                  "",
+                                                                  "")));
+                                                } else {
+                                                  if (await interstitialAd
+                                                      .isLoaded) {
+                                                    interstitialAd.show();
+                                                  } else {
+                                                    ScaffoldMessenger
+                                                            .of(context)
+                                                        .showSnackBar(SnackBar(
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .deepPurple,
+                                                            content: Text(
+                                                                "Loading...")));
+                                                  }
+                                                }
+                                              }
                                             },
                                           ),
                                         ],
@@ -500,6 +647,58 @@ class _GameScreenState extends State<GameScreen> {
                                   ))
                             ],
                           ))),
+                  SizedBox(
+                    height: 20.h,
+                  ),
+                  Container(
+                    child: AdmobBanner(
+                      adUnitId: 'ca-app-pub-8553679955744021/3464979707',
+                      adSize: AdmobBannerSize.MEDIUM_RECTANGLE,
+                      listener:
+                          (AdmobAdEvent event, Map<String, dynamic> args) {
+                        switch (event) {
+                          case AdmobAdEvent.loaded:
+                            print('New Admob Ad loaded!');
+
+                            break;
+                          case AdmobAdEvent.opened:
+                            print('Admob Ad opened!');
+                            break;
+                          case AdmobAdEvent.closed:
+                            print('Admob Ad closed!');
+                            break;
+                          case AdmobAdEvent.failedToLoad:
+                            print('Admob failed to load. :(');
+                            break;
+                          case AdmobAdEvent.clicked:
+                            print('Admob Ad Clicked');
+                            break;
+                          case AdmobAdEvent.completed:
+                            print('Admob Ad Completed');
+                            break;
+                          case AdmobAdEvent.impression:
+                            print('Admob Ad Impression');
+                            break;
+                          case AdmobAdEvent.leftApplication:
+                            break;
+                          case AdmobAdEvent.started:
+                            print('Admob Ad Started');
+                            break;
+                          case AdmobAdEvent.rewarded:
+                            print('Admob Ad Rewarded');
+                            break;
+                          default:
+                            print("ggg");
+                        }
+                      },
+                      onBannerCreated: (AdmobBannerController controller) {
+                        // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+                        // Normally you don't need to worry about disposing this yourself, it's handled.
+                        // If you need direct access to dispose, this is your guy!
+                        // controller.dispose();
+                      },
+                    ),
+                  ),
                   SizedBox(
                     height: 20.h,
                   ),

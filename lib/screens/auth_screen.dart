@@ -134,8 +134,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 child: Container(
                   height: 300.h,
                   width: 360.h,
-                  child: Image.network(
-                    "https://www.99images.com/download-image/979126/1080x2340",
+                  child: Image.asset(
+                    "assets/images/Skull.png",
                     fit: BoxFit.cover,
                   ),
                 ),

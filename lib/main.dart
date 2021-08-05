@@ -5,13 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rosterz/screens/auth_screen.dart';
 import 'package:rosterz/screens/allmatch_screen.dart';
+import 'package:rosterz/screens/feedback_screen.dart';
 import 'package:rosterz/screens/game_screen.dart';
 import 'package:rosterz/screens/home_screen.dart';
 import 'package:rosterz/screens/host_screen.dart';
 import 'package:rosterz/screens/match_screen.dart';
 import 'package:rosterz/screens/notification_screen.dart';
+import 'package:rosterz/screens/payment_screen.dart';
 import 'package:rosterz/screens/result_screen.dart';
-import 'package:rosterz/screens/search_screen.dart';
 import 'package:rosterz/screens/splash_screen.dart';
 
 String serverURl = "https://rosterz.herokuapp.com";
@@ -58,7 +59,8 @@ class MyApp extends StatelessWidget {
                     NotificationScreen.routeName: (context) =>
                         NotificationScreen(),
                     SplashScreen.routeName: (context) => SplashScreen(),
-                    SearchScreen.routeName: (context) => SearchScreen(),
+                    PaymentScreen.routeName: (context) => PaymentScreen(),
+                    FeedBackScreen.routeName: (context) => FeedBackScreen(),
                   });
             }));
   }

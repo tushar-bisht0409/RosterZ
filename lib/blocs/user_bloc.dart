@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:rosterz/main.dart';
 import 'package:rosterz/models/user_info.dart';
 
@@ -30,6 +31,20 @@ class UserBloc {
               await dio.get(serverURl + '/fcmtokenlist', queryParameters: {
             "userIDs": event.userIDs,
           });
+        } else if (event.actions == "joinhost") {
+          response = await dio.post(serverURl + '/usermatch',
+              data: jsonEncode({
+                "type": event.type,
+                "userID": userID,
+                "matchID": event.matchID,
+              }));
+        } else if (event.actions == "feedback") {
+          response = await dio.post(serverURl + '/sendfeedback',
+              data: jsonEncode({
+                "feedback": event.feedback,
+                "userID": userID,
+                "timeStamp": DateTime.now().toString(),
+              }));
         }
       } on Error catch (e) {
         print(e);

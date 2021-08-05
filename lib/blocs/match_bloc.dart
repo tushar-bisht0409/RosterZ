@@ -22,7 +22,7 @@ class MatchBloc {
         if (event.actions == "host") {
           var matchdata = {
             "matchID": event.matchID,
-            "organzier": event.organizer,
+            "organizer": event.organizer,
             "userID": userID,
             "map": event.map,
             "maxPlayers": event.maxPlayers,

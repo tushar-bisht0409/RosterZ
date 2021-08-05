@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:rosterz/main.dart';
+import 'package:rosterz/screens/auth_screen.dart';
+import 'package:rosterz/screens/feedback_screen.dart';
 import 'package:rosterz/screens/matchjoinhost_screen.dart';
+import 'package:rosterz/screens/payment_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //ignore: must_be_immutable
 class AppDrawer extends StatelessWidget {
@@ -9,7 +14,8 @@ class AppDrawer extends StatelessWidget {
       top: ScreenUtil().setHeight(10), left: ScreenUtil().setWidth(25));
   Widget build(BuildContext context) {
     return Theme(
-        data: Theme.of(context).copyWith(canvasColor: Colors.black),
+        data: Theme.of(context)
+            .copyWith(canvasColor: Colors.black.withOpacity(0.6)),
         child: Drawer(
           child: ListView(
             padding: EdgeInsets.zero,
@@ -102,6 +108,30 @@ class AppDrawer extends StatelessWidget {
                 ),
                 onTap: () {
                   Navigator.of(context).pop();
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => PaymentScreen()));
+                },
+              ),
+              ListTile(
+                contentPadding: p,
+                leading: Icon(
+                  Icons.feedback_rounded,
+                  size: 30.h,
+                  color: Colors.pink[300],
+                ),
+                title: Text(
+                  'Feedback',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12.sp,
+                      fontWeight: FontWeight.w600),
+                ),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => FeedBackScreen()));
                 },
               ),
               ListTile(
@@ -119,9 +149,13 @@ class AppDrawer extends StatelessWidget {
                         fontWeight: FontWeight.w600),
                   ),
                   onTap: () async {
-                    //   Navigator.pop(context);
-                    //     Navigator.pushReplacement(context,
-                    //       MaterialPageRoute(builder: (context) => ZeroScreen()));
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    await prefs.remove('userID');
+                    await prefs.remove('fcmToken');
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(context,
+                        MaterialPageRoute(builder: (context) => AuthScreen()));
                   }),
             ],
           ),

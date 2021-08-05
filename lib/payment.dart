@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:rosterz/blocs/match_bloc.dart';
+import 'package:rosterz/blocs/user_bloc.dart';
+import 'package:rosterz/models/user_info.dart';
 
 class Payment extends StatefulWidget {
   var entryFee;
@@ -14,7 +16,8 @@ class Payment extends StatefulWidget {
 class _PaymentState extends State<Payment> {
   final razorpay = Razorpay();
   MatchBloc registerBloc = MatchBloc();
-
+  UserBloc uBloc = UserBloc();
+  UserInfo uInfo = UserInfo();
   @override
   void initState() {
     razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, externalWallet);
@@ -26,6 +29,10 @@ class _PaymentState extends State<Payment> {
   void paySuccess(PaymentSuccessResponse response) {
     print('yoooo');
     registerBloc.eventSink.add(widget.regInfo);
+    uInfo.actions = "joinhost";
+    uInfo.type = "join";
+    uInfo.matchID = widget.regInfo.matchID;
+    uBloc.eventSink.add(uInfo);
     print(response.paymentId.toString());
   }
 

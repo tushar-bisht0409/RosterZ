@@ -97,12 +97,28 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
                     if (snapshot.hasData) {
                       if (snapshot.data['success'] == false) {
-                        return Center(
-                          child: Text(
-                            'No Notification',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        );
+                        return Padding(
+                            padding: EdgeInsets.only(top: 200.h),
+                            child: Center(
+                              child: Column(children: <Widget>[
+                                Icon(
+                                  Icons.notifications_off_rounded,
+                                  color: Colors.pink,
+                                  size: 100.h,
+                                ),
+                                Container(
+                                    alignment: Alignment.center,
+                                    width: 250.w,
+                                    child: Text(
+                                      'No Notifications',
+                                      style: TextStyle(
+                                        fontSize: 20.sp,
+                                        fontWeight: FontWeight.w300,
+                                        color: Colors.white,
+                                      ),
+                                    ))
+                              ]),
+                            ));
                       }
                       tempCount = snapshot.data['msz'].length;
                       if (notificationCount != snapshot.data['msz'].length) {
@@ -253,8 +269,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             );
                           });
                     }
-                    return Center(
-                      child: CircularProgressIndicator(),
+                    return Padding(
+                      padding: EdgeInsets.only(top: 300.h),
+                      child: Center(child: CircularProgressIndicator()),
                     );
                   })
             ])));

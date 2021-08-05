@@ -1,3 +1,4 @@
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -22,7 +23,9 @@ class MatchScreen extends StatefulWidget {
 class _MatchScreenState extends State<MatchScreen> {
   TextEditingController teamName = TextEditingController();
   TextEditingController playerName = TextEditingController();
+  AdmobReward rewardAd;
   String dropdownValue = "";
+  var joinCreate;
   List<String> teamList = [""];
   var teamIDs = {};
   var tokenList = [];
@@ -36,6 +39,45 @@ class _MatchScreenState extends State<MatchScreen> {
   MatchInfo notiInfo = MatchInfo();
   UserInfo notiusers = UserInfo();
   UserBloc listBloc = UserBloc();
+  UserBloc uBloc = UserBloc();
+  UserInfo uInfo = UserInfo();
+
+  void _showDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.black,
+        title: Text(
+          'Registration Status!',
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          "Registered Successfully",
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text(
+              'Ok',
+              style: TextStyle(
+                color: Colors.pink,
+                fontSize: 16.sp,
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      ),
+    );
+  }
 
   bool isRegistered() {
     if (widget.mInfo["registeredBy"] != null) {
@@ -52,10 +94,97 @@ class _MatchScreenState extends State<MatchScreen> {
     notiusers.actions = 'gettokenlist';
     notiusers.userIDs = widget.mInfo['registeredBy'];
     listBloc.eventSink.add(notiusers);
+    rewardAd = AdmobReward(
+      adUnitId: "ca-app-pub-8553679955744021/2444103157",
+      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+        switch (event) {
+          case AdmobAdEvent.loaded:
+            print('New Admob Ad loaded!');
+
+            break;
+          case AdmobAdEvent.opened:
+            print('Admob Ad opened!');
+            break;
+          case AdmobAdEvent.closed:
+            print('Admob Ad closed!');
+            break;
+          case AdmobAdEvent.failedToLoad:
+            print('Admob failed to load. :(');
+            break;
+          case AdmobAdEvent.clicked:
+            print('Admob Ad Clicked');
+            break;
+          case AdmobAdEvent.completed:
+            print('Admob Ad Completed');
+            break;
+          case AdmobAdEvent.impression:
+            print('Admob Ad Impression');
+            break;
+          case AdmobAdEvent.leftApplication:
+            print('registered');
+            if (joinCreate == "join") {
+              if (mounted) {
+                setState(() {
+                  isLoading = true;
+                  regInfo.actions = "register";
+                  regInfo.type = "join";
+                  regInfo.matchID = widget.matchID; //widget.matchID
+                  regInfo.player = playerName.text;
+                  regInfo.teamName = dropdownValue;
+                  regInfo.matchType = "reward";
+                  regInfo.teamID = teamIDs["$dropdownValue"];
+                  widget.mInfo["registeredBy"].add(userID);
+
+                  registerBloc.eventSink.add(regInfo);
+                  uInfo.actions = "joinhost";
+                  uInfo.type = "join";
+                  uInfo.matchID = widget.matchID;
+                  uBloc.eventSink.add(uInfo);
+                  Navigator.of(context).pop();
+                  _showDialog();
+                });
+              }
+            } else if (joinCreate == "create") {
+              if (mounted) {
+                setState(() {
+                  isLoading = true;
+                  regInfo.actions = "register";
+                  regInfo.type = "create";
+                  regInfo.matchID = widget.matchID; //widget.matchID
+                  regInfo.player = playerName.text;
+                  regInfo.teamName = teamName.text;
+                  regInfo.matchType = "reward";
+                  regInfo.teamID =
+                      "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
+                  widget.mInfo["registeredBy"].add(userID);
+                  registerBloc.eventSink.add(regInfo);
+                  uInfo.actions = "joinhost";
+                  uInfo.type = "join";
+                  uInfo.matchID = widget.matchID;
+                  uBloc.eventSink.add(uInfo);
+                  Navigator.of(context).pop();
+                  _showDialog();
+                });
+              }
+            }
+            break;
+          case AdmobAdEvent.started:
+            print('Admob Ad Started');
+            break;
+          case AdmobAdEvent.rewarded:
+            print('Admob Ad Rewarded');
+            break;
+          default:
+            print("ggg");
+        }
+      },
+    );
+    rewardAd.load();
   }
 
   @override
   Widget build(BuildContext context) {
+    print(widget.matchID);
     return SafeArea(
         child: Scaffold(
             backgroundColor: Colors.black,
@@ -89,11 +218,13 @@ class _MatchScreenState extends State<MatchScreen> {
                         children: <Widget>[
                           IconButton(
                               icon: Icon(
-                                Icons.menu,
+                                Icons.arrow_back_ios_rounded,
                                 color: Colors.white,
                                 size: 20.w,
                               ),
-                              onPressed: () {}),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              }),
                           Container(
                               width: 200.w,
                               height: 50.h,
@@ -137,6 +268,7 @@ class _MatchScreenState extends State<MatchScreen> {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
+                                        backgroundColor: Colors.deepPurple,
                                         content:
                                             Text("ID Pass Sent SuccessFully")));
                               });
@@ -145,6 +277,7 @@ class _MatchScreenState extends State<MatchScreen> {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
+                                        backgroundColor: Colors.deepPurple,
                                         content: Text("ID Pass Not Sent !!!")));
                               });
                             }
@@ -164,169 +297,236 @@ class _MatchScreenState extends State<MatchScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              RichText(
-                                text: TextSpan(
-                                    text: "\nID Pass At: ",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w500),
-                                    children: <TextSpan>[
-                                      TextSpan(
-                                          text: widget.mInfo["idTime"],
-                                          style: TextStyle(
+                              Container(
+                                  width: 120.w,
+                                  child: RichText(
+                                    text: TextSpan(
+                                        text: "\nID Pass At: ",
+                                        style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: ScreenUtil().setSp(12),
-                                            fontWeight: FontWeight.w500,
-                                          )),
-                                    ]),
-                              ),
-                              RichText(
-                                text: TextSpan(
-                                    text: "\nMatch Time: ",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w500),
-                                    children: <TextSpan>[
-                                      TextSpan(
-                                          text: widget.mInfo["matchTime"],
-                                          style: TextStyle(
+                                            fontSize: 12.sp,
+                                            fontWeight: FontWeight.w500),
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text: widget.mInfo["idTime"],
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize:
+                                                    ScreenUtil().setSp(12),
+                                                fontWeight: FontWeight.w500,
+                                              )),
+                                        ]),
+                                  )),
+                              Container(
+                                  width: 120.w,
+                                  child: RichText(
+                                    text: TextSpan(
+                                        text: "\nMatch Time: ",
+                                        style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: ScreenUtil().setSp(12),
-                                            fontWeight: FontWeight.w500,
-                                          )),
-                                    ]),
-                              ),
+                                            fontSize: 12.sp,
+                                            fontWeight: FontWeight.w500),
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text: widget.mInfo["matchTime"],
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize:
+                                                    ScreenUtil().setSp(12),
+                                                fontWeight: FontWeight.w500,
+                                              )),
+                                        ]),
+                                  )),
                             ],
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              RichText(
-                                text: TextSpan(
-                                    text: "\nRegistration: ",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w500),
-                                    children: <TextSpan>[
-                                      TextSpan(
-                                          text: widget.mInfo["status"],
-                                          style: TextStyle(
+                              Container(
+                                  width: 120.w,
+                                  child: RichText(
+                                    text: TextSpan(
+                                        text: "\nRegistration: ",
+                                        style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: ScreenUtil().setSp(12),
-                                            fontWeight: FontWeight.w500,
-                                          )),
-                                    ]),
-                              ),
-                              RichText(
-                                text: TextSpan(
-                                    text: "\nMap: ",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w500),
-                                    children: <TextSpan>[
-                                      TextSpan(
-                                          text: widget.mInfo["map"],
-                                          style: TextStyle(
+                                            fontSize: 12.sp,
+                                            fontWeight: FontWeight.w500),
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text: widget.mInfo["status"],
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize:
+                                                    ScreenUtil().setSp(12),
+                                                fontWeight: FontWeight.w500,
+                                              )),
+                                        ]),
+                                  )),
+                              Container(
+                                  width: 120.w,
+                                  child: RichText(
+                                    text: TextSpan(
+                                        text: "\nMap: ",
+                                        style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: ScreenUtil().setSp(12),
-                                            fontWeight: FontWeight.w500,
-                                          )),
-                                    ]),
-                              ),
+                                            fontSize: 12.sp,
+                                            fontWeight: FontWeight.w500),
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text: widget.mInfo["map"],
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize:
+                                                    ScreenUtil().setSp(12),
+                                                fontWeight: FontWeight.w500,
+                                              )),
+                                        ]),
+                                  )),
                             ],
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              RichText(
-                                text: TextSpan(
-                                    text: "\nTotal Slots: ",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w500),
-                                    children: <TextSpan>[
-                                      TextSpan(
-                                          text: widget.mInfo["totalSlots"],
-                                          style: TextStyle(
+                              Container(
+                                  width: 120.w,
+                                  child: RichText(
+                                    text: TextSpan(
+                                        text: "\nTotal Slots: ",
+                                        style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: ScreenUtil().setSp(12),
-                                            fontWeight: FontWeight.w500,
-                                          )),
-                                    ]),
-                              ),
-                              RichText(
-                                text: TextSpan(
-                                    text: "\nmin/max players: ",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w500),
-                                    children: <TextSpan>[
-                                      TextSpan(
-                                          text:
-                                              "${widget.mInfo["minPlayers"]}/${widget.mInfo["maxPlayers"]}",
-                                          style: TextStyle(
+                                            fontSize: 12.sp,
+                                            fontWeight: FontWeight.w500),
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text: widget.mInfo["totalSlots"],
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize:
+                                                    ScreenUtil().setSp(12),
+                                                fontWeight: FontWeight.w500,
+                                              )),
+                                        ]),
+                                  )),
+                              Container(
+                                  width: 120.w,
+                                  child: RichText(
+                                    text: TextSpan(
+                                        text: "\nmin/max players: ",
+                                        style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: ScreenUtil().setSp(12),
-                                            fontWeight: FontWeight.w500,
-                                          )),
-                                    ]),
-                              ),
+                                            fontSize: 12.sp,
+                                            fontWeight: FontWeight.w500),
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text:
+                                                  "${widget.mInfo["minPlayers"]}/${widget.mInfo["maxPlayers"]}",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize:
+                                                    ScreenUtil().setSp(12),
+                                                fontWeight: FontWeight.w500,
+                                              )),
+                                        ]),
+                                  )),
                             ],
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              RichText(
-                                text: TextSpan(
-                                    text: "\nEntry Fee: ",
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12.sp,
-                                        fontWeight: FontWeight.w500),
-                                    children: <TextSpan>[
-                                      TextSpan(
-                                          text: "₹ ${widget.mInfo["entryFee"]}",
-                                          style: TextStyle(
+                              Container(
+                                  width: 120.w,
+                                  child: RichText(
+                                    text: TextSpan(
+                                        text: "\nEntry Fee: ",
+                                        style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: ScreenUtil().setSp(12),
-                                            fontWeight: FontWeight.w500,
-                                          )),
-                                    ]),
-                              ),
+                                            fontSize: 12.sp,
+                                            fontWeight: FontWeight.w500),
+                                        children: <TextSpan>[
+                                          TextSpan(
+                                              text:
+                                                  "₹ ${widget.mInfo["entryFee"]}",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize:
+                                                    ScreenUtil().setSp(12),
+                                                fontWeight: FontWeight.w500,
+                                              )),
+                                        ]),
+                                  )),
                               GestureDetector(
-                                child: RichText(
-                                  text: TextSpan(
-                                      text: "\nMatch ID: ",
-                                      style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 12.sp,
-                                          fontWeight: FontWeight.w500),
-                                      children: <TextSpan>[
-                                        TextSpan(
-                                            text: "${widget.mInfo["matchID"]}",
-                                            style: TextStyle(
+                                child: Container(
+                                    width: 120.w,
+                                    child: RichText(
+                                      text: TextSpan(
+                                          text: "\nMatch ID: ",
+                                          style: TextStyle(
                                               color: Colors.white,
-                                              fontSize: ScreenUtil().setSp(12),
-                                              fontWeight: FontWeight.w500,
-                                            )),
-                                      ]),
-                                ),
+                                              fontSize: 12.sp,
+                                              fontWeight: FontWeight.w500),
+                                          children: <TextSpan>[
+                                            TextSpan(
+                                                text:
+                                                    "${widget.mInfo["matchID"]}",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize:
+                                                      ScreenUtil().setSp(12),
+                                                  fontWeight: FontWeight.w500,
+                                                )),
+                                          ]),
+                                    )),
                                 onTap: () {
                                   Clipboard.setData(ClipboardData(
                                       text: widget.mInfo["matchID"]));
                                   ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
+                                          backgroundColor: Colors.deepPurple,
                                           content: Text("Match ID Copied")));
                                 },
                               ),
                             ],
                           ),
+                          widget.mInfo["matchLink"] == ""
+                              ? SizedBox()
+                              : GestureDetector(
+                                  child: Container(
+                                      width: 200.w,
+                                      height: 50.h,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(
+                                            ScreenUtil().setWidth(30)),
+                                      ),
+                                      child: RichText(
+                                        text: TextSpan(
+                                            text: "\nMatch Link: ",
+                                            style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12.sp,
+                                                fontWeight: FontWeight.w500),
+                                            children: <TextSpan>[
+                                              TextSpan(
+                                                  text:
+                                                      "${widget.mInfo["matchLink"]}",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize:
+                                                        ScreenUtil().setSp(12),
+                                                    fontWeight: FontWeight.w500,
+                                                  )),
+                                            ]),
+                                      )),
+                                  onTap: () {
+                                    Clipboard.setData(ClipboardData(
+                                        text: widget.mInfo["matchLink"]));
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            backgroundColor: Colors.deepPurple,
+                                            content:
+                                                Text("Match Link Copied")));
+                                  },
+                                ),
                           widget.mInfo["userID"] == userID
                               ? Container(
                                   alignment: Alignment.center,
@@ -337,7 +537,7 @@ class _MatchScreenState extends State<MatchScreen> {
                                     color: Colors.black,
                                   ),
                                   margin: EdgeInsets.only(
-                                      top: ScreenUtil().setHeight(30),
+                                      top: ScreenUtil().setHeight(15),
                                       bottom: 10.h,
                                       right: ScreenUtil().setWidth(100),
                                       left: ScreenUtil().setWidth(100)),
@@ -393,13 +593,35 @@ class _MatchScreenState extends State<MatchScreen> {
                                     matchInfo.actions = "getteam";
                                     // matchInfo.actions = "getMatch";
                                     // matchInfo.getBy = "matchID";
-                                    matchInfo.matchID = "123"; //widget.matchID;
+                                    matchInfo.matchID = widget.matchID;
                                     matchBloc.eventSink.add(matchInfo);
                                     if (snapshot.hasData) {
                                       if (snapshot.data["success"] == false) {
-                                        return Center(
-                                          child: Text("Something Went Wrong"),
-                                        );
+                                        return Padding(
+                                            padding:
+                                                EdgeInsets.only(top: 100.h),
+                                            child: Center(
+                                              child: Column(children: <Widget>[
+                                                Icon(
+                                                  Icons.cancel_rounded,
+                                                  color: Colors.white,
+                                                  size: 50.h,
+                                                ),
+                                                Container(
+                                                    alignment: Alignment.center,
+                                                    width: 250.w,
+                                                    child: Text(
+                                                      'No Teams, Register Now !',
+                                                      style: TextStyle(
+                                                        fontSize: 20.sp,
+                                                        fontWeight:
+                                                            FontWeight.w300,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ))
+                                              ]),
+                                            ));
+                                        ;
                                       } else if (snapshot.data["success"]) {
                                         match = snapshot.data["msz"];
                                         var listLen =
@@ -504,14 +726,16 @@ class _MatchScreenState extends State<MatchScreen> {
                                             });
                                       }
                                     }
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                                Colors.white),
-                                        //backgroundColor: Colors.black,
-                                      ),
-                                    );
+                                    return Padding(
+                                        padding: EdgeInsets.only(top: 100.h),
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                    Colors.white),
+                                            //backgroundColor: Colors.black,
+                                          ),
+                                        ));
                                   }))
                         ],
                       ),
@@ -794,18 +1018,20 @@ class _MatchScreenState extends State<MatchScreen> {
                                                                       () {
                                                                     if (tokenList ==
                                                                         []) {
-                                                                      ScaffoldMessenger.of(
-                                                                              context)
-                                                                          .showSnackBar(
-                                                                              SnackBar(content: Text("Loading.....")));
+                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                                          backgroundColor: Colors
+                                                                              .deepPurple,
+                                                                          content:
+                                                                              Text("Loading.....")));
                                                                     } else if (playerName
                                                                             .text
                                                                             .trim() ==
                                                                         "") {
-                                                                      ScaffoldMessenger.of(
-                                                                              context)
-                                                                          .showSnackBar(
-                                                                              SnackBar(content: Text("Details cannot be empty.")));
+                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                                          backgroundColor: Colors
+                                                                              .deepPurple,
+                                                                          content:
+                                                                              Text("Details cannot be empty.")));
                                                                     } else {
                                                                       if (mounted) {
                                                                         setState(
@@ -1107,29 +1333,24 @@ class _MatchScreenState extends State<MatchScreen> {
                                                                                       ),
                                                                                       child: Center(
                                                                                           child: TextButton(
-                                                                                              onPressed: () {
-                                                                                                if (mounted) {
-                                                                                                  setState(() {
-                                                                                                    if (teamName.text.trim() == "" || playerName.text.trim() == "") {
-                                                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please Fill all the Fields")));
-                                                                                                    } else if (teamList.contains(teamName.text)) {
-                                                                                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Team Already Exist")));
-                                                                                                    } else {
-                                                                                                      isLoading = true;
-                                                                                                      regInfo.actions = "register";
-                                                                                                      regInfo.type = "create";
-                                                                                                      regInfo.matchID = "123"; //widget.matchID
-                                                                                                      regInfo.player = playerName.text;
-                                                                                                      regInfo.teamName = teamName.text;
-                                                                                                      regInfo.matchType = "reward";
-                                                                                                      regInfo.teamID = "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
-                                                                                                      widget.mInfo["registeredBy"].add(userID);
-
-                                                                                                      registerBloc.eventSink.add(regInfo);
-                                                                                                      Navigator.of(context).pop();
-                                                                                                      //  _createRewardedAd();
+                                                                                              onPressed: () async {
+                                                                                                if (teamName.text.trim() == "" || playerName.text.trim() == "") {
+                                                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Please Fill all the Fields")));
+                                                                                                } else if (teamList.contains(teamName.text)) {
+                                                                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Team Already Exist")));
+                                                                                                } else {
+                                                                                                  print("aas ${await rewardAd.isLoaded}");
+                                                                                                  if (await rewardAd.isLoaded) {
+                                                                                                    if (mounted) {
+                                                                                                      setState(() {
+                                                                                                        joinCreate = 'create';
+                                                                                                      });
                                                                                                     }
-                                                                                                  });
+                                                                                                    Navigator.of(context).pop();
+                                                                                                    rewardAd.show();
+                                                                                                  } else {
+                                                                                                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text(('Reward ad is still loading...'))));
+                                                                                                  }
                                                                                                 }
                                                                                               },
                                                                                               child: Text(
@@ -1146,28 +1367,21 @@ class _MatchScreenState extends State<MatchScreen> {
                                                                                       child: Center(
                                                                                           child: TextButton(
                                                                                               onPressed: teamList != [""]
-                                                                                                  ? () {
-                                                                                                      if (mounted) {
-                                                                                                        setState(() {
-                                                                                                          if (dropdownValue == "" || playerName.text.trim() == "") {
-                                                                                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Please Fill all the Fields")));
-                                                                                                          } else {
-                                                                                                            isLoading = true;
-                                                                                                            regInfo.actions = "register";
-                                                                                                            regInfo.type = "join";
-                                                                                                            regInfo.matchID = "123"; //widget.matchID
-                                                                                                            regInfo.player = playerName.text;
-                                                                                                            regInfo.teamName = dropdownValue;
-                                                                                                            regInfo.matchType = "reward";
-                                                                                                            regInfo.teamID = teamIDs["$dropdownValue"];
-                                                                                                            widget.mInfo["registeredBy"].add(userID);
-
-                                                                                                            registerBloc.eventSink.add(regInfo);
-                                                                                                            Navigator.of(context).pop();
-
-                                                                                                            //    _createRewardedAd();
+                                                                                                  ? () async {
+                                                                                                      if (dropdownValue == "" || playerName.text.trim() == "") {
+                                                                                                        return ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Please Fill all the Fields")));
+                                                                                                      } else {
+                                                                                                        if (await rewardAd.isLoaded) {
+                                                                                                          if (mounted) {
+                                                                                                            setState(() {
+                                                                                                              joinCreate = 'join';
+                                                                                                            });
                                                                                                           }
-                                                                                                        });
+                                                                                                          Navigator.of(context).pop();
+                                                                                                          rewardAd.show();
+                                                                                                        } else {
+                                                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(('Reward ad is still loading...'))));
+                                                                                                        }
                                                                                                       }
                                                                                                     }
                                                                                                   : null,
@@ -1345,16 +1559,16 @@ class _MatchScreenState extends State<MatchScreen> {
                                                                                   "Register",
                                                                                   style: TextStyle(color: Colors.white),
                                                                                 ),
-                                                                                onPressed: () {
+                                                                                onPressed: () async {
                                                                                   if (mounted) {
                                                                                     setState(() {
                                                                                       if (teamName.text.trim() == "") {
-                                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Team Name is required")));
+                                                                                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Team Name is required")));
                                                                                       } else {
                                                                                         isLoading = true;
                                                                                         regInfo.actions = "register";
                                                                                         regInfo.type = "create";
-                                                                                        regInfo.matchID = "123"; //widget.matchID
+                                                                                        regInfo.matchID = widget.matchID;
 
                                                                                         regInfo.player = playerName.text;
                                                                                         regInfo.teamName = teamName.text;
@@ -1364,8 +1578,12 @@ class _MatchScreenState extends State<MatchScreen> {
                                                                                         widget.mInfo["registeredBy"].add(userID);
                                                                                         if (widget.mInfo["entryFee"] == null || widget.mInfo["entryFee"] == "0" || widget.mInfo["entryFee"] == "null") {
                                                                                           registerBloc.eventSink.add(regInfo);
+                                                                                          uInfo.actions = "joinhost";
+                                                                                          uInfo.type = "join";
+                                                                                          uInfo.matchID = widget.matchID;
+                                                                                          uBloc.eventSink.add(uInfo);
                                                                                           Navigator.of(context).pop();
-                                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Registered Successfully")));
+                                                                                          _showDialog();
                                                                                         } else {
                                                                                           Navigator.of(context).pop();
                                                                                           showModalBottomSheet(
@@ -1373,6 +1591,7 @@ class _MatchScreenState extends State<MatchScreen> {
                                                                                               backgroundColor: Colors.transparent,
                                                                                               isScrollControlled: true,
                                                                                               builder: (BuildContext context) {
+                                                                                                _showDialog();
                                                                                                 return Payment('${widget.mInfo["entryFee"]}', regInfo);
                                                                                               });
                                                                                         }

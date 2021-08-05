@@ -1,3 +1,4 @@
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rosterz/blocs/match_bloc.dart';
@@ -27,6 +28,104 @@ class _ResultScreenState extends State<ResultScreen> {
   UserBloc listBloc = UserBloc();
   MatchBloc notiBloc = MatchBloc();
   MatchInfo notiInfo = MatchInfo();
+  AdmobReward rewardAd;
+  bool noAd = false;
+  int adCount = 0;
+  void _showDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.black,
+        title: Text(
+          'Match Status!',
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          "Result Declared Successfully",
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text(
+              'Ok',
+              style: TextStyle(
+                color: Colors.pink,
+                fontSize: 16.sp,
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  createAd() {
+    rewardAd = AdmobReward(
+      adUnitId: "ca-app-pub-8553679955744021/8082376983",
+      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+        switch (event) {
+          case AdmobAdEvent.loaded:
+            print('New Admob Ad loaded!');
+
+            break;
+          case AdmobAdEvent.opened:
+            print('Admob Ad opened!');
+            break;
+          case AdmobAdEvent.closed:
+            print('Admob Ad closed!');
+            break;
+          case AdmobAdEvent.failedToLoad:
+            print('Admob failed to load. :(');
+            if (mounted) {
+              setState(() {
+                adCount++;
+              });
+            }
+            if (adCount < 4) {
+              createAd();
+            } else {
+              if (mounted) {
+                setState(() {
+                  noAd = true;
+                });
+              }
+            }
+            break;
+          case AdmobAdEvent.clicked:
+            print('Admob Ad Clicked');
+            break;
+          case AdmobAdEvent.completed:
+            print('Admob Ad Completed');
+            break;
+          case AdmobAdEvent.impression:
+            print('Admob Ad Impression');
+            break;
+          case AdmobAdEvent.leftApplication:
+            print('registered');
+            break;
+          case AdmobAdEvent.started:
+            print('Admob Ad Started');
+            break;
+          case AdmobAdEvent.rewarded:
+            print('Admob Ad Rewarded');
+            break;
+          default:
+            print("ggg");
+        }
+      },
+    );
+    rewardAd.load();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +152,7 @@ class _ResultScreenState extends State<ResultScreen> {
       saveResult.actions = "getresult";
       resultBloc.eventSink.add(saveResult);
     }
+    createAd();
   }
 
   @override
@@ -125,6 +225,51 @@ class _ResultScreenState extends State<ResultScreen> {
                       ))
                   : SizedBox(),
               widget.showmake == "show"
+                  ? Container(
+                      decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.all(Radius.circular(5.h))),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 5.h, horizontal: 15.w),
+                      margin:
+                          EdgeInsets.symmetric(vertical: 5.h, horizontal: 30.w),
+                      alignment: Alignment.centerLeft,
+                      // height: 35.h,
+                      width: 300.w,
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: <Widget>[
+                            Container(
+                                alignment: Alignment.center,
+                                width: 90.w,
+                                child: Text(
+                                  "Position",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w300),
+                                )),
+                            Container(
+                                alignment: Alignment.center,
+                                width: 90.w,
+                                child: Text("Team",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: ScreenUtil().setSp(16),
+                                      fontWeight: FontWeight.w300,
+                                    ))),
+                            Container(
+                                alignment: Alignment.center,
+                                width: 90.w,
+                                child: Text("Points",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: ScreenUtil().setSp(16),
+                                      fontWeight: FontWeight.w300,
+                                    ))),
+                          ]))
+                  : SizedBox(),
+              widget.showmake == "show"
                   ? StreamBuilder(
                       stream: resultBloc.matchStream,
                       builder: (ctx, snapshot) {
@@ -145,55 +290,117 @@ class _ResultScreenState extends State<ResultScreen> {
 
                                   var tinfo = snapshot.data["msz"][0]
                                       ["teamResult"][ind];
-                                  return Container(
-                                      decoration: BoxDecoration(
-                                          //   color: Colors.black54,
-                                          gradient: LinearGradient(colors: [
-                                            Colors.deepPurple,
-                                            Colors.black26,
-                                            Colors.black54,
-                                            Colors.pink
-                                          ], stops: [
-                                            0.1,
-                                            0.4,
-                                            0.6,
-                                            1.0
-                                          ]),
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(5.h))),
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: 5.h, horizontal: 20.w),
-                                      margin: EdgeInsets.symmetric(
-                                          vertical: 5.h, horizontal: 30.w),
-                                      alignment: Alignment.centerLeft,
-                                      height: 35.h,
-                                      width: 300.w,
-                                      child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            Text(
-                                              "${index + 1}.  ",
+                                  return GestureDetector(
+                                    child: Container(
+                                        decoration: BoxDecoration(
+                                            //   color: Colors.black54,
+                                            gradient: LinearGradient(colors: [
+                                              Colors.deepPurple,
+                                              Colors.black26,
+                                              Colors.black54,
+                                              Colors.pink
+                                            ], stops: [
+                                              0.1,
+                                              0.4,
+                                              0.6,
+                                              1.0
+                                            ]),
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(5.h))),
+                                        padding: EdgeInsets.symmetric(
+                                            vertical: 5.h, horizontal: 20.w),
+                                        margin: EdgeInsets.symmetric(
+                                            vertical: 5.h, horizontal: 30.w),
+                                        alignment: Alignment.centerLeft,
+                                        // height: 35.h,
+                                        width: 300.w,
+                                        child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: <Widget>[
+                                              Container(
+                                                  alignment: Alignment.center,
+                                                  width: 20.w,
+                                                  child: Text(
+                                                    "${index + 1}.  ",
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 16.sp,
+                                                        fontWeight:
+                                                            FontWeight.w700),
+                                                  )),
+                                              Container(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  width: 120.w,
+                                                  child: Text(
+                                                      "${tinfo["teamName"]}",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: ScreenUtil()
+                                                            .setSp(12),
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ))),
+                                              Container(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  width: 120.w,
+                                                  child:
+                                                      Text("${tinfo["points"]}",
+                                                          style: TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize:
+                                                                ScreenUtil()
+                                                                    .setSp(12),
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ))),
+                                            ])),
+                                    onTap: () {
+                                      var prizeMoney = tinfo["prize"];
+                                      if (prizeMoney == "") {
+                                        prizeMoney = "0";
+                                      }
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) async {
+                                        await showDialog(
+                                          context: context,
+                                          builder: (context) => AlertDialog(
+                                            backgroundColor: Colors.black,
+                                            title: Text(
+                                              'Prize',
                                               style: TextStyle(
                                                   color: Colors.white,
-                                                  fontSize: 16.sp,
-                                                  fontWeight: FontWeight.w700),
+                                                  fontSize: 22.sp,
+                                                  fontWeight: FontWeight.w600),
                                             ),
-                                            Text("${tinfo["teamName"]}",
-                                                style: TextStyle(
+                                            content: Text(
+                                              "${tinfo["teamName"]} is awarded with ₹ $prizeMoney .",
+                                              style: TextStyle(
                                                   color: Colors.white,
-                                                  fontSize:
-                                                      ScreenUtil().setSp(12),
-                                                  fontWeight: FontWeight.w500,
-                                                )),
-                                            Text("${tinfo["points"]}",
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize:
-                                                      ScreenUtil().setSp(12),
-                                                  fontWeight: FontWeight.w500,
-                                                )),
-                                          ]));
+                                                  fontSize: 18.sp,
+                                                  fontWeight: FontWeight.w600),
+                                            ),
+                                            actions: <Widget>[
+                                              TextButton(
+                                                child: Text(
+                                                  'Ok',
+                                                  style: TextStyle(
+                                                    color: Colors.pink,
+                                                    fontSize: 16.sp,
+                                                  ),
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      });
+                                    },
+                                  );
                                 });
                           }
                           return Container(
@@ -295,9 +502,11 @@ class _ResultScreenState extends State<ResultScreen> {
                                               if (dropdownTeam
                                                       .contains(newValue) &&
                                                   dropdownTeam[index] == null) {
-                                                return ScaffoldMessenger.of(
-                                                        context)
+                                                return ScaffoldMessenger
+                                                        .of(context)
                                                     .showSnackBar(SnackBar(
+                                                        backgroundColor:
+                                                            Colors.deepPurple,
                                                         content: Text(
                                                             "Team Already Selected")));
                                               } else if (dropdownTeam[index] !=
@@ -525,39 +734,89 @@ class _ResultScreenState extends State<ResultScreen> {
                           "Declare Result",
                           style: TextStyle(color: Colors.white),
                         ),
-                        onPressed: () {
-                          if (mounted) {
-                            setState(() {
-                              isLoading = true;
-                              saveResult.actions = "postresult";
-                              saveResult.game = "PUBG";
-                              saveResult.matchID = "123"; //widget.matchID
-                              saveResult.matchType = "daily";
-                              saveResult.organizer = "Organizer";
-                              saveResult.prizePool = "11";
-                              saveResult.result = result;
-                              resultBloc.eventSink.add(saveResult);
-                              notiInfo.actions = "sendnotification";
-                              notiInfo.title = "Result";
-                              notiInfo.body =
-                                  "Result Declared for Match ${widget.mInfo['matchID']}.";
-                              notiInfo.organizer = widget.mInfo["organizer"];
-                              notiInfo.game = widget.mInfo["game"];
-                              notiInfo.matchID = widget.mInfo["matchID"];
-                              notiInfo.matchIDs = tokenList;
-                              notiBloc.eventSink.add(notiInfo);
+                        onPressed: () async {
+                          if (noAd) {
+                            if (mounted) {
+                              setState(() {
+                                isLoading = true;
+                                saveResult.actions = "postresult";
+                                saveResult.game = "PUBG";
+                                saveResult.matchID = "123"; //widget.matchID
+                                saveResult.matchType = "daily";
+                                saveResult.organizer = "Organizer";
+                                saveResult.prizePool = "11";
+                                saveResult.result = result;
+                                resultBloc.eventSink.add(saveResult);
+                                notiInfo.actions = "sendnotification";
+                                notiInfo.title = "Result";
+                                notiInfo.body =
+                                    "Result Declared for Match ${widget.mInfo['matchID']}.";
+                                notiInfo.organizer = widget.mInfo["organizer"];
+                                notiInfo.game = widget.mInfo["game"];
+                                notiInfo.matchID = widget.mInfo["matchID"];
+                                notiInfo.matchIDs = tokenList;
+                                notiBloc.eventSink.add(notiInfo);
+                                //print(result);
+                                Navigator.of(context).pop();
+
+                                //    _createRewardedAd();
+                              });
+                            }
+                            _showDialog();
+                          } else {
+                            if (await rewardAd.isLoaded) {
+                              if (mounted) {
+                                setState(() {
+                                  isLoading = true;
+                                  saveResult.actions = "postresult";
+                                  saveResult.game = "PUBG";
+                                  saveResult.matchID = "123"; //widget.matchID
+                                  saveResult.matchType = "daily";
+                                  saveResult.organizer = "Organizer";
+                                  saveResult.prizePool = "11";
+                                  saveResult.result = result;
+                                  resultBloc.eventSink.add(saveResult);
+                                  notiInfo.actions = "sendnotification";
+                                  notiInfo.title = "Result";
+                                  notiInfo.body =
+                                      "Result Declared for Match ${widget.mInfo['matchID']}.";
+                                  notiInfo.organizer =
+                                      widget.mInfo["organizer"];
+                                  notiInfo.game = widget.mInfo["game"];
+                                  notiInfo.matchID = widget.mInfo["matchID"];
+                                  notiInfo.matchIDs = tokenList;
+                                  notiBloc.eventSink.add(notiInfo);
+                                  //print(result);
+                                  Navigator.of(context).pop();
+
+                                  //    _createRewardedAd();
+                                });
+                              }
+                              rewardAd.show();
+                              _showDialog();
+                            } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                      content: Text("Saved Successfully")));
-                              //print(result);
-                              Navigator.of(context).pop();
-
-                              //    _createRewardedAd();
-                            });
+                                      backgroundColor: Colors.deepPurple,
+                                      content: Text(
+                                          ('Reward ad is still loading...'))));
+                            }
                           }
                         },
                       )))
-                  : SizedBox(),
+                  : Container(
+                      alignment: Alignment.center,
+                      margin: EdgeInsets.symmetric(
+                          vertical: 30.h, horizontal: 30.w),
+                      width: 300.h,
+                      child: Text(
+                        "Tap on the team to view prize.",
+                        style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w400),
+                      ),
+                    ),
             ])));
   }
 }

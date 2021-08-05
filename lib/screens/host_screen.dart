@@ -1,8 +1,11 @@
+import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:rosterz/blocs/match_bloc.dart';
+import 'package:rosterz/blocs/user_bloc.dart';
 import 'package:rosterz/models/match_info.dart';
+import 'package:rosterz/models/user_info.dart';
 
 class HostScreen extends StatefulWidget {
   static const routeName = '/host';
@@ -15,6 +18,7 @@ class _HostScreenState extends State<HostScreen> {
   List<String> matchType = ["DAILY", "REWARD"];
   var gameName; // = "PUBG";
   var mType;
+  AdmobReward rewardAd;
   TextEditingController organizer = TextEditingController();
   TextEditingController maxPlayers = TextEditingController();
   TextEditingController minPlayers = TextEditingController();
@@ -24,16 +28,123 @@ class _HostScreenState extends State<HostScreen> {
   TextEditingController matchTime = TextEditingController();
   TextEditingController entryFee = TextEditingController();
   TextEditingController matchLink = TextEditingController();
+  TextEditingController prize = TextEditingController();
   var mDate;
   var mTime;
   var idpassTime;
+  bool noAd = false;
+  int adCount = 0;
   MatchBloc registerBloc = MatchBloc();
   MatchInfo matchInfo = MatchInfo();
+  UserBloc uBloc = UserBloc();
+  UserInfo uInfo = UserInfo();
+
+  createAd() {
+    rewardAd = AdmobReward(
+      adUnitId: "ca-app-pub-8553679955744021/8082376983",
+      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+        switch (event) {
+          case AdmobAdEvent.loaded:
+            print('New Admob Ad loaded!');
+
+            break;
+          case AdmobAdEvent.opened:
+            print('Admob Ad opened!');
+            break;
+          case AdmobAdEvent.closed:
+            print('Admob Ad closed!');
+            break;
+          case AdmobAdEvent.failedToLoad:
+            print('Admob failed to load. :(');
+            if (mounted) {
+              setState(() {
+                adCount++;
+              });
+            }
+            if (adCount < 4) {
+              createAd();
+            } else {
+              if (mounted) {
+                setState(() {
+                  noAd = true;
+                });
+              }
+            }
+            break;
+          case AdmobAdEvent.clicked:
+            print('Admob Ad Clicked');
+            break;
+          case AdmobAdEvent.completed:
+            print('Admob Ad Completed');
+            break;
+          case AdmobAdEvent.impression:
+            print('Admob Ad Impression');
+            break;
+          case AdmobAdEvent.leftApplication:
+            print('registered');
+            break;
+          case AdmobAdEvent.started:
+            print('Admob Ad Started');
+            break;
+          case AdmobAdEvent.rewarded:
+            print('Admob Ad Rewarded');
+            break;
+          default:
+            print("ggg");
+        }
+      },
+    );
+    rewardAd.load();
+  }
+
+  void _showDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.black,
+        title: Text(
+          'Match Status!',
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w600),
+        ),
+        content: Text(
+          "Match Hosted Successfully",
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w600),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text(
+              'Ok',
+              style: TextStyle(
+                color: Colors.pink,
+                fontSize: 16.sp,
+              ),
+            ),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    createAd();
+  }
 
   @override
   Widget build(BuildContext context) {
     if (mType == 'REWARD') {
       setState(() {
+        prize.text = "Unrevealed";
         entryFee.text = '0';
       });
     }
@@ -813,6 +924,76 @@ class _HostScreenState extends State<HostScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
+                      'Pool Prize',
+                      style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                    ),
+                    Container(
+                        margin: EdgeInsets.only(
+                          top: ScreenUtil().setHeight(10),
+                        ),
+                        alignment: Alignment.center,
+                        width: ScreenUtil().setWidth(280),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(colors: [
+                            Colors.pink,
+                            Colors.deepPurple,
+                            Colors.lightBlue
+                          ]),
+                          borderRadius:
+                              BorderRadius.circular(ScreenUtil().setWidth(30)),
+                        ),
+                        padding: EdgeInsets.all(2.w),
+                        child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(
+                                  ScreenUtil().setWidth(30)),
+                              color: Colors.black,
+                            ),
+                            child: Center(
+                                child: TextField(
+                              controller: prize,
+                              enabled: mType == 'REWARD' ? false : true,
+                              decoration: InputDecoration(
+                                prefix: Text("₹",
+                                    style: TextStyle(color: Colors.white)),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.w),
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.w),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.w),
+                                ),
+                                disabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.w),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.w),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(30.w),
+                                ),
+                                contentPadding: EdgeInsets.only(left: 20.w),
+                                hintText: "Pool Prize",
+
+                                // fillColor: Colors.transparent[100],
+                                focusColor: Colors.grey[400],
+                                hintStyle: TextStyle(color: Colors.grey[400]),
+                              ),
+                              style: TextStyle(color: Colors.white),
+                              keyboardType: TextInputType.text,
+                            )))),
+                  ])),
+          Padding(
+              padding: EdgeInsets.only(
+                  top: ScreenUtil().setHeight(30),
+                  right: ScreenUtil().setWidth(40),
+                  left: ScreenUtil().setWidth(40)),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
                       'Match Link',
                       style: TextStyle(color: Colors.white, fontSize: 16.sp),
                     ),
@@ -893,39 +1074,84 @@ class _HostScreenState extends State<HostScreen> {
                       fontSize: 16.sp,
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     if (organizer.text.trim() == "" ||
                         maxPlayers.text.trim() == "" ||
                         minPlayers.text.trim() == "" ||
                         maps.text.trim() == "" ||
                         slots.text.trim() == "" ||
+                        prize.text.trim() == "" ||
                         entryFee.text.trim() == "" ||
                         gameName == "" ||
                         idpassTime == null ||
                         mTime == null ||
                         mType == "") {
                       return ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Some Fields Are Empty")));
+                          SnackBar(
+                              backgroundColor: Colors.deepPurple,
+                              content: Text("Some Fields Are Empty")));
                     } else {
-                      matchInfo.actions = "host";
-                      matchInfo.organizer = organizer.text;
-                      matchInfo.map = maps.text;
-                      matchInfo.maxPlayers = maxPlayers.text;
-                      matchInfo.minPlayers = minPlayers.text;
-                      matchInfo.totalSlots = slots.text;
-                      matchInfo.entryFee = entryFee.text;
-                      matchInfo.matchTime =
-                          "${mTime.hourOfPeriod}:${mTime.minute} ${mTime.period.toString().substring(10)},${DateFormat('d MMMM, y').format(mDate).toString()}";
-                      matchInfo.idTime =
-                          "${idpassTime.hourOfPeriod}:${idpassTime.minute} ${idpassTime.period.toString().substring(10)}";
+                      if (noAd) {
+                        matchInfo.actions = "host";
+                        matchInfo.organizer = organizer.text;
+                        matchInfo.map = maps.text;
+                        matchInfo.maxPlayers = maxPlayers.text;
+                        matchInfo.minPlayers = minPlayers.text;
+                        matchInfo.totalSlots = slots.text;
+                        matchInfo.entryFee = entryFee.text;
+                        matchInfo.matchTime =
+                            "${mTime.hourOfPeriod}:${mTime.minute} ${mTime.period.toString().substring(10)},${DateFormat('d MMMM, y').format(mDate).toString()}";
+                        matchInfo.idTime =
+                            "${idpassTime.hourOfPeriod}:${idpassTime.minute} ${idpassTime.period.toString().substring(10)}";
 
-                      matchInfo.game = gameName;
-                      matchInfo.matchType = mType;
-                      matchInfo.matchLink = matchLink.text;
-                      matchInfo.matchID =
-                          "$gameName${organizer.text}${DateTime.now()}$mType";
-                      registerBloc.eventSink.add(matchInfo);
-                      Navigator.of(context).pop();
+                        matchInfo.game = gameName;
+                        matchInfo.matchType = mType.toLowerCase();
+                        matchInfo.matchLink = matchLink.text;
+                        matchInfo.matchID =
+                            "$gameName${organizer.text}${DateTime.now()}$mType";
+                        registerBloc.eventSink.add(matchInfo);
+                        uInfo.actions = "joinhost";
+                        uInfo.type = "host";
+                        uInfo.matchID = matchInfo.matchID;
+                        uBloc.eventSink.add(uInfo);
+                        _showDialog();
+                      } else {
+                        if (await rewardAd.isLoaded) {
+                          matchInfo.actions = "host";
+                          matchInfo.organizer = organizer.text;
+                          matchInfo.map = maps.text;
+                          matchInfo.maxPlayers = maxPlayers.text;
+                          matchInfo.minPlayers = minPlayers.text;
+                          matchInfo.totalSlots = slots.text;
+                          matchInfo.entryFee = entryFee.text;
+                          matchInfo.matchTime =
+                              "${mTime.hourOfPeriod}:${mTime.minute} ${mTime.period.toString().substring(10)},${DateFormat('d MMMM, y').format(mDate).toString()}";
+                          matchInfo.idTime =
+                              "${idpassTime.hourOfPeriod}:${idpassTime.minute} ${idpassTime.period.toString().substring(10)}";
+
+                          matchInfo.game = gameName;
+                          matchInfo.matchType = mType.toLowerCase();
+                          if (matchLink.text == null) {
+                            matchInfo.matchLink = "";
+                          } else {
+                            matchInfo.matchLink = matchLink.text;
+                          }
+                          matchInfo.matchID =
+                              "$gameName${organizer.text}${DateTime.now()}$mType";
+                          registerBloc.eventSink.add(matchInfo);
+                          uInfo.actions = "joinhost";
+                          uInfo.type = "host";
+                          uInfo.matchID = matchInfo.matchID;
+                          uBloc.eventSink.add(uInfo);
+                          rewardAd.show();
+                          _showDialog();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              backgroundColor: Colors.deepPurple,
+                              content:
+                                  Text(('Reward ad is still loading...'))));
+                        }
+                      }
                     }
                   },
                 ))),
