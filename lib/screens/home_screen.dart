@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rosterz/blocs/match_bloc.dart';
 import 'package:rosterz/blocs/user_bloc.dart';
@@ -130,6 +131,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     toppad = MediaQuery.of(context).padding.top.ceil();
     bottompad = MediaQuery.of(context).padding.bottom.ceil();
     return SafeArea(
@@ -182,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
             colorBlendMode: BlendMode.darken,
           ),
         ),
-        Column(
+        ListView(
           children: <Widget>[
             StreamBuilder(
                 stream: userBloc.userStream,

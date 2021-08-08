@@ -1,5 +1,6 @@
 import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rosterz/blocs/match_bloc.dart';
 import 'package:rosterz/main.dart';
@@ -117,6 +118,8 @@ class _AllMatchScreenState extends State<AllMatchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     return SafeArea(
         child: Scaffold(
       body: Stack(children: <Widget>[

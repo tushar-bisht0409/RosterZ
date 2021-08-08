@@ -1,4 +1,4 @@
-package com.inso.rosterz
+package com.inso.rosterZ
 
 import io.flutter.embedding.android.FlutterActivity
 

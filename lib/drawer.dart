@@ -41,7 +41,7 @@ class AppDrawer extends StatelessWidget {
                 ),
                 child: Center(
                     child: Text(
-                  'Spiritzee',
+                  'RosterZ',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 28,

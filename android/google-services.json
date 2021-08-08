@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "705501133616",
+    "project_id": "rosterz-79d6d",
+    "storage_bucket": "rosterz-79d6d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:705501133616:android:d78a0d82ddefbefaa626f5",
+        "android_client_info": {
+          "package_name": "com.inso.rosterZ"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "705501133616-j53ocfsqfdthut4h1lp17s4p8b5ekkin.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBecsKM4ahGYWPF0B1vmpo6o2NbjhMfbIA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "705501133616-j53ocfsqfdthut4h1lp17s4p8b5ekkin.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

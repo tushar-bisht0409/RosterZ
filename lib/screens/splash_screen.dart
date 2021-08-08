@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rosterz/main.dart';
 import 'package:rosterz/screens/auth_screen.dart';
 import 'package:rosterz/screens/home_screen.dart';
@@ -36,6 +38,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     return isData
         ? userID == null
             ? AuthScreen()
@@ -45,7 +49,16 @@ class _SplashScreenState extends State<SplashScreen> {
             backgroundColor: Colors.black,
             body: StreamBuilder(
               builder: (ctx, snapShot) {
-                return SizedBox();
+                return Container(
+                  margin: EdgeInsets.only(
+                      top: 345.h - 200.w, left: 30.w, right: 30.w),
+                  height: 300.w,
+                  width: 300.w,
+                  child: Image.asset(
+                    'assets/images/Logo.png',
+                    fit: BoxFit.cover,
+                  ),
+                );
               },
             ),
           ));

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rosterz/blocs/user_bloc.dart';
 import 'package:rosterz/models/user_info.dart';
@@ -15,6 +16,8 @@ class _FeedBackScreenState extends State<FeedBackScreen> {
   UserBloc userBloc = UserBloc();
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations(
+        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     return SafeArea(
         child: Scaffold(
       backgroundColor: Colors.black,
