@@ -380,7 +380,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                     left: ScreenUtil().setWidth(115)),
                                 child: Container(
                                     alignment: Alignment.center,
-                                    width: ScreenUtil().setWidth(80),
+                                    width: 100.sp,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(
                                           ScreenUtil().setWidth(30)),
@@ -392,7 +392,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                         authMode == AuthMode.Signup
                                             ? "SIGN UP"
                                             : "LOG IN",
-                                        style: TextStyle(color: Colors.white),
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14.sp),
                                       ),
                                       onPressed: submmit,
                                     )))),
@@ -403,7 +405,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                     left: ScreenUtil().setWidth(115)),
                                 child: Container(
                                     alignment: Alignment.center,
-                                    width: ScreenUtil().setWidth(80),
+                                    width: 100.sp,
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(colors: [
                                         Colors.pink,
@@ -427,7 +429,8 @@ class _AuthScreenState extends State<AuthScreen> {
                                                       ? "LOG IN"
                                                       : "SIGN UP",
                                                   style: TextStyle(
-                                                      color: Colors.white),
+                                                      color: Colors.white,
+                                                      fontSize: 14.sp),
                                                 ),
                                                 onPressed: authChange))))),
                           ]);

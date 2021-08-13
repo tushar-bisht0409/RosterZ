@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     return ScreenUtilInit(
         designSize: Size(360, 690),
-        // allowFontScaling: false,
+        // allowFontScaling: false,1
         builder: () => FutureBuilder(builder: (context, appSnapshot) {
               return MaterialApp(
                   debugShowCheckedModeBanner: false,

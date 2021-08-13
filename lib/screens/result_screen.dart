@@ -29,9 +29,6 @@ class _ResultScreenState extends State<ResultScreen> {
   UserBloc listBloc = UserBloc();
   MatchBloc notiBloc = MatchBloc();
   MatchInfo notiInfo = MatchInfo();
-  AdmobReward rewardAd;
-  bool noAd = false;
-  int adCount = 0;
   void _showDialog() async {
     await showDialog(
       context: context,
@@ -69,64 +66,6 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
-  createAd() {
-    rewardAd = AdmobReward(
-      adUnitId: "ca-app-pub-8553679955744021/8082376983",
-      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
-        switch (event) {
-          case AdmobAdEvent.loaded:
-            print('New Admob Ad loaded!');
-
-            break;
-          case AdmobAdEvent.opened:
-            print('Admob Ad opened!');
-            break;
-          case AdmobAdEvent.closed:
-            print('Admob Ad closed!');
-            break;
-          case AdmobAdEvent.failedToLoad:
-            print('Admob failed to load. :(');
-            if (mounted) {
-              setState(() {
-                adCount++;
-              });
-            }
-            if (adCount < 4) {
-              createAd();
-            } else {
-              if (mounted) {
-                setState(() {
-                  noAd = true;
-                });
-              }
-            }
-            break;
-          case AdmobAdEvent.clicked:
-            print('Admob Ad Clicked');
-            break;
-          case AdmobAdEvent.completed:
-            print('Admob Ad Completed');
-            break;
-          case AdmobAdEvent.impression:
-            print('Admob Ad Impression');
-            break;
-          case AdmobAdEvent.leftApplication:
-            print('registered');
-            break;
-          case AdmobAdEvent.started:
-            print('Admob Ad Started');
-            break;
-          case AdmobAdEvent.rewarded:
-            print('Admob Ad Rewarded');
-            break;
-          default:
-            print("ggg");
-        }
-      },
-    );
-    rewardAd.load();
-  }
-
   @override
   void initState() {
     super.initState();
@@ -153,7 +92,6 @@ class _ResultScreenState extends State<ResultScreen> {
       saveResult.actions = "getresult";
       resultBloc.eventSink.add(saveResult);
     }
-    createAd();
   }
 
   @override
@@ -738,73 +676,33 @@ class _ResultScreenState extends State<ResultScreen> {
                           style: TextStyle(color: Colors.white),
                         ),
                         onPressed: () async {
-                          if (noAd) {
-                            if (mounted) {
-                              setState(() {
-                                isLoading = true;
-                                saveResult.actions = "postresult";
-                                saveResult.game = "PUBG";
-                                saveResult.matchID = "123"; //widget.matchID
-                                saveResult.matchType = "daily";
-                                saveResult.organizer = "Organizer";
-                                saveResult.prizePool = "11";
-                                saveResult.result = result;
-                                resultBloc.eventSink.add(saveResult);
-                                notiInfo.actions = "sendnotification";
-                                notiInfo.title = "Result";
-                                notiInfo.body =
-                                    "Result Declared for Match ${widget.mInfo['matchID']}.";
-                                notiInfo.organizer = widget.mInfo["organizer"];
-                                notiInfo.game = widget.mInfo["game"];
-                                notiInfo.matchID = widget.mInfo["matchID"];
-                                notiInfo.matchIDs = tokenList;
-                                notiBloc.eventSink.add(notiInfo);
-                                //print(result);
-                                Navigator.of(context).pop();
+                          if (mounted) {
+                            setState(() {
+                              isLoading = true;
+                              saveResult.actions = "postresult";
+                              saveResult.game = "PUBG";
+                              saveResult.matchID = "123"; //widget.matchID
+                              saveResult.matchType = "daily";
+                              saveResult.organizer = "Organizer";
+                              saveResult.prizePool = "11";
+                              saveResult.result = result;
+                              resultBloc.eventSink.add(saveResult);
+                              notiInfo.actions = "sendnotification";
+                              notiInfo.title = "Result";
+                              notiInfo.body =
+                                  "Result Declared for Match ${widget.mInfo['matchID']}.";
+                              notiInfo.organizer = widget.mInfo["organizer"];
+                              notiInfo.game = widget.mInfo["game"];
+                              notiInfo.matchID = widget.mInfo["matchID"];
+                              notiInfo.matchIDs = tokenList;
+                              notiBloc.eventSink.add(notiInfo);
+                              //print(result);
+                              Navigator.of(context).pop();
 
-                                //    _createRewardedAd();
-                              });
-                            }
-                            _showDialog();
-                          } else {
-                            if (await rewardAd.isLoaded) {
-                              if (mounted) {
-                                setState(() {
-                                  isLoading = true;
-                                  saveResult.actions = "postresult";
-                                  saveResult.game = "PUBG";
-                                  saveResult.matchID = "123"; //widget.matchID
-                                  saveResult.matchType = "daily";
-                                  saveResult.organizer = "Organizer";
-                                  saveResult.prizePool = "11";
-                                  saveResult.result = result;
-                                  resultBloc.eventSink.add(saveResult);
-                                  notiInfo.actions = "sendnotification";
-                                  notiInfo.title = "Result";
-                                  notiInfo.body =
-                                      "Result Declared for Match ${widget.mInfo['matchID']}.";
-                                  notiInfo.organizer =
-                                      widget.mInfo["organizer"];
-                                  notiInfo.game = widget.mInfo["game"];
-                                  notiInfo.matchID = widget.mInfo["matchID"];
-                                  notiInfo.matchIDs = tokenList;
-                                  notiBloc.eventSink.add(notiInfo);
-                                  //print(result);
-                                  Navigator.of(context).pop();
-
-                                  //    _createRewardedAd();
-                                });
-                              }
-                              rewardAd.show();
-                              _showDialog();
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      backgroundColor: Colors.deepPurple,
-                                      content: Text(
-                                          ('Reward ad is still loading...'))));
-                            }
+                              //    _createRewardedAd();
+                            });
                           }
+                          _showDialog();
                         },
                       )))
                   : Container(

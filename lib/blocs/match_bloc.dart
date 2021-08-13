@@ -32,6 +32,7 @@ class MatchBloc {
             "idTime": event.idTime,
             "game": event.game,
             "matchType": event.matchType,
+            "entryFee": event.entryFee,
             "status": "open",
             "matchLink": event.matchLink
           };

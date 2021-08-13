@@ -11,7 +11,6 @@ import 'package:rosterz/main.dart';
 import 'package:rosterz/models/match_info.dart';
 import 'package:rosterz/models/user_info.dart';
 import 'package:rosterz/screens/game_screen.dart';
-import 'package:rosterz/screens/host_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:rosterz/screens/notification_screen.dart';
 
@@ -41,6 +40,201 @@ class _HomeScreenState extends State<HomeScreen> {
   AdmobInterstitial interstitialAd;
   bool noAd = false;
   int adCount = 0;
+  //AdmobBanner b2;
+  //AdmobBanner b3;
+  int bannerAdCount = 0;
+  int bannerAdFail = 0;
+  bool isBanner = false;
+  AdmobBanner b1;
+
+  createBannerAd1() {
+    b1 = AdmobBanner(
+      adUnitId: 'ca-app-pub-7072052726974940/5488771146',
+      adSize: AdmobBannerSize.BANNER,
+      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+        switch (event) {
+          case AdmobAdEvent.loaded:
+            print('New Admob Ad loaded!');
+            if (mounted) {
+              setState(() {
+                bannerAdCount++;
+                isBanner = true;
+              });
+            }
+            break;
+          case AdmobAdEvent.opened:
+            print('Admob Ad opened!');
+            break;
+          case AdmobAdEvent.closed:
+            print('Admob Ad closed!');
+            break;
+          case AdmobAdEvent.failedToLoad:
+            print('Admob failed to load. :(');
+            if (bannerAdFail < 2) {
+              if (mounted) {
+                setState(() {
+                  bannerAdFail++;
+                  createBannerAd1();
+                });
+              }
+            } else {
+              isBanner = true;
+            }
+            break;
+          case AdmobAdEvent.clicked:
+            print('Admob Ad Clicked');
+            break;
+          case AdmobAdEvent.completed:
+            print('Admob Ad Completed');
+            break;
+          case AdmobAdEvent.impression:
+            print('Admob Ad Impression');
+            break;
+          case AdmobAdEvent.leftApplication:
+            break;
+          case AdmobAdEvent.started:
+            print('Admob Ad Started');
+            break;
+          case AdmobAdEvent.rewarded:
+            print('Admob Ad Rewarded');
+            break;
+          default:
+            print("ggg");
+        }
+      },
+      onBannerCreated: (AdmobBannerController controller) {
+        // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+        // Normally you don't need to worry about disposing this yourself, it's handled.
+        // If you need direct access to dispose, this is your guy!
+        // controller.dispose();
+      },
+    );
+  }
+
+  // createBannerAd2() {
+  //   b2 = AdmobBanner(
+  //     adUnitId: 'ca-app-pub-7072052726974940/5488771146',
+  //     adSize: AdmobBannerSize.BANNER,
+  //     listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+  //       switch (event) {
+  //         case AdmobAdEvent.loaded:
+  //           print('New Admob Ad loaded!');
+  //           if (mounted) {
+  //             setState(() {
+  //               bannerAdCount++;
+  //             });
+  //           }
+  //           break;
+  //         case AdmobAdEvent.opened:
+  //           print('Admob Ad opened!');
+  //           break;
+  //         case AdmobAdEvent.closed:
+  //           print('Admob Ad closed!');
+  //           break;
+  //         case AdmobAdEvent.failedToLoad:
+  //           print('Admob failed to load. :(');
+  //           if (bannerAdFail < 5) {
+  //             if (mounted) {
+  //               setState(() {
+  //                 bannerAdFail++;
+  //               });
+  //             }
+  //           } else {
+  //             createBannerAd2();
+  //           }
+  //           break;
+  //         case AdmobAdEvent.clicked:
+  //           print('Admob Ad Clicked');
+  //           break;
+  //         case AdmobAdEvent.completed:
+  //           print('Admob Ad Completed');
+  //           break;
+  //         case AdmobAdEvent.impression:
+  //           print('Admob Ad Impression');
+  //           break;
+  //         case AdmobAdEvent.leftApplication:
+  //           break;
+  //         case AdmobAdEvent.started:
+  //           print('Admob Ad Started');
+  //           break;
+  //         case AdmobAdEvent.rewarded:
+  //           print('Admob Ad Rewarded');
+  //           break;
+  //         default:
+  //           print("ggg");
+  //       }
+  //     },
+  //     onBannerCreated: (AdmobBannerController controller) {
+  //       // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+  //       // Normally you don't need to worry about disposing this yourself, it's handled.
+  //       // If you need direct access to dispose, this is your guy!
+  //       // controller.dispose();
+  //     },
+  //   );
+  // }
+
+  // createBannerAd3() {
+  //   b3 = AdmobBanner(
+  //     adUnitId: 'ca-app-pub-7072052726974940/5488771146',
+  //     adSize: AdmobBannerSize.BANNER,
+  //     listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+  //       switch (event) {
+  //         case AdmobAdEvent.loaded:
+  //           print('New Admob Ad loaded!');
+  //           if (mounted) {
+  //             setState(() {
+  //               bannerAdCount++;
+  //             });
+  //           }
+  //           break;
+  //         case AdmobAdEvent.opened:
+  //           print('Admob Ad opened!');
+  //           break;
+  //         case AdmobAdEvent.closed:
+  //           print('Admob Ad closed!');
+  //           break;
+  //         case AdmobAdEvent.failedToLoad:
+  //           print('Admob failed to load. :(');
+  //           if (bannerAdFail < 5) {
+  //             if (mounted) {
+  //               setState(() {
+  //                 bannerAdFail++;
+  //               });
+  //             }
+  //           } else {
+  //             createBannerAd3();
+  //           }
+  //           break;
+  //         case AdmobAdEvent.clicked:
+  //           print('Admob Ad Clicked');
+  //           break;
+  //         case AdmobAdEvent.completed:
+  //           print('Admob Ad Completed');
+  //           break;
+  //         case AdmobAdEvent.impression:
+  //           print('Admob Ad Impression');
+  //           break;
+  //         case AdmobAdEvent.leftApplication:
+  //           break;
+  //         case AdmobAdEvent.started:
+  //           print('Admob Ad Started');
+  //           break;
+  //         case AdmobAdEvent.rewarded:
+  //           print('Admob Ad Rewarded');
+  //           break;
+  //         default:
+  //           print("ggg");
+  //       }
+  //     },
+  //     onBannerCreated: (AdmobBannerController controller) {
+  //       // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+  //       // Normally you don't need to worry about disposing this yourself, it's handled.
+  //       // If you need direct access to dispose, this is your guy!
+  //       // controller.dispose();
+  //     },
+  //   );
+  // }
+
   Future<void> getuser() async {
     userInfo.actions = "getinfo";
     userInfo.userID = userID;
@@ -64,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   createAd() {
     interstitialAd = AdmobInterstitial(
-      adUnitId: 'ca-app-pub-8553679955744021/8717306381',
+      adUnitId: 'ca-app-pub-7072052726974940/3537680635',
       listener: (AdmobAdEvent event, Map<String, dynamic> args) {
         switch (event) {
           case AdmobAdEvent.loaded:
@@ -127,6 +321,9 @@ class _HomeScreenState extends State<HomeScreen> {
     saveFcmToken();
     getuser();
     createAd();
+    createBannerAd1();
+    // createBannerAd2();
+    // createBannerAd3();
   }
 
   @override
@@ -140,40 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: AppDrawer(),
       backgroundColor: Colors.black,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: GestureDetector(
-        child: Container(
-            margin: EdgeInsets.only(
-                top: ScreenUtil().setHeight(10),
-                bottom: 20.h,
-                right: ScreenUtil().setWidth(103),
-                left: ScreenUtil().setWidth(103)),
-            height: 50.h,
-            alignment: Alignment.center,
-            //width: 150.h,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  colors: [Colors.pink, Colors.deepPurple, Colors.lightBlue]),
-              borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
-            ),
-            padding: EdgeInsets.all(2.w),
-            child: Container(
-              alignment: Alignment.center,
-              width: 150.w,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
-                color: Colors.black,
-              ),
-              padding: EdgeInsets.symmetric(vertical: 15.h, horizontal: 20.w),
-              child: Text(
-                "Host Match",
-                style: TextStyle(color: Colors.white, fontSize: 16.sp),
-              ),
-            )),
-        onTap: () {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (BuildContext context) => HostScreen()));
-        },
-      ),
+      floatingActionButton: Container(child: b1),
       body: Stack(children: <Widget>[
         Container(
           height: double.infinity,
@@ -276,11 +440,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
+            Container(child: b1),
             Container(
                 padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 20.w),
                 width: 360.w,
-                height: 630.h - toppad, //- bottompad,
+                //   height: 630.h - toppad, //- bottompad,
                 child: GridView.builder(
+                    shrinkWrap: true,
                     // physics: NeverScrollableScrollPhysics(),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         mainAxisSpacing: 20.h,
@@ -310,12 +476,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                       fit: BoxFit.cover)),
                             )),
                         onTap: () {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (BuildContext context) =>
-                                  GameScreen(gameNo[index])));
+                          if (isBanner) {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (BuildContext context) =>
+                                    GameScreen(gameNo[index])));
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                backgroundColor: Colors.deepPurple,
+                                content: Text(
+                                    "Wait for Few seconds ..... Loading")));
+                          }
                         },
                       );
-                    }))
+                    })),
+            Container(child: b1),
           ],
         )
       ]),

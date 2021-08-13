@@ -27,6 +27,76 @@ class _MatchJoinHostScreenState extends State<MatchJoinHostScreen> {
   var mlen;
   bool noAd = false;
   int adCount = 0;
+
+  int bannerAdCount = 0;
+  int bannerAdFail = 0;
+  bool isBanner = false;
+  AdmobBanner b1;
+
+  createBannerAd1() {
+    b1 = AdmobBanner(
+      adUnitId: 'ca-app-pub-7072052726974940/5488771146',
+      adSize: AdmobBannerSize.BANNER,
+      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+        switch (event) {
+          case AdmobAdEvent.loaded:
+            print('New Admob Ad loaded!');
+            if (mounted) {
+              setState(() {
+                bannerAdCount++;
+                isBanner = true;
+              });
+            }
+            break;
+          case AdmobAdEvent.opened:
+            print('Admob Ad opened!');
+            break;
+          case AdmobAdEvent.closed:
+            print('Admob Ad closed!');
+            break;
+          case AdmobAdEvent.failedToLoad:
+            print('Admob failed to load. :(');
+            if (bannerAdFail < 1) {
+              if (mounted) {
+                setState(() {
+                  bannerAdFail++;
+                  createBannerAd1();
+                });
+              }
+            } else {
+              isBanner = true;
+            }
+            break;
+          case AdmobAdEvent.clicked:
+            print('Admob Ad Clicked');
+            break;
+          case AdmobAdEvent.completed:
+            print('Admob Ad Completed');
+            break;
+          case AdmobAdEvent.impression:
+            print('Admob Ad Impression');
+            break;
+          case AdmobAdEvent.leftApplication:
+            break;
+          case AdmobAdEvent.started:
+            print('Admob Ad Started');
+            break;
+          case AdmobAdEvent.rewarded:
+            print('Admob Ad Rewarded');
+            break;
+          default:
+            print("ggg");
+        }
+      },
+      onBannerCreated: (AdmobBannerController controller) {
+        // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+        // Normally you don't need to worry about disposing this yourself, it's handled.
+        // If you need direct access to dispose, this is your guy!
+        // controller.dispose();
+      },
+    );
+  }
+
   String slotsLeft(int ind) {
     var left =
         int.parse(allMatch[ind]["totalSlots"]) - allMatch[ind]["teams"].length;
@@ -35,7 +105,7 @@ class _MatchJoinHostScreenState extends State<MatchJoinHostScreen> {
 
   createAd() {
     interstitialAd = AdmobInterstitial(
-      adUnitId: 'ca-app-pub-8553679955744021/7358965017',
+      adUnitId: 'ca-app-pub-7072052726974940/3537680635',
       listener: (AdmobAdEvent event, Map<String, dynamic> args) {
         switch (event) {
           case AdmobAdEvent.loaded:
@@ -109,6 +179,7 @@ class _MatchJoinHostScreenState extends State<MatchJoinHostScreen> {
     userInfo.userID = userID;
     userBloc.eventSink.add(userInfo);
     createAd();
+    createBannerAd1();
   }
 
   @override
@@ -187,10 +258,11 @@ class _MatchJoinHostScreenState extends State<MatchJoinHostScreen> {
                 ],
               ),
             ),
+            Container(child: b1),
             Container(
                 padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 20.w),
                 width: double.infinity,
-                height: 625.h - toppad, //- bottompad,
+                // height: 625.h - toppad, //- bottompad,
                 child: StreamBuilder(
                   stream: matchBloc.userStream,
                   builder: (ctx, snapshot) {
@@ -227,6 +299,7 @@ class _MatchJoinHostScreenState extends State<MatchJoinHostScreen> {
                         allMatch = snapshot.data["msz"];
                         print("aasd ${snapshot.data["msz"]}");
                         return ListView.builder(
+                            physics: NeverScrollableScrollPhysics(),
                             shrinkWrap: true,
                             itemCount: allMatch.length,
                             itemBuilder: (ctx, index) {
@@ -522,106 +595,68 @@ class _MatchJoinHostScreenState extends State<MatchJoinHostScreen> {
                                         ],
                                       )),
                                   onTap: () async {
-                                    if (mounted) {
-                                      setState(() {
-                                        selectedIndex = index;
-                                      });
-                                    }
-                                    if (noAd) {
-                                      if (allMatch[selectedIndex]
-                                              ['matchType'] ==
-                                          "daily") {
-                                        Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (BuildContext
-                                                        context) =>
-                                                    MatchScreen(
-                                                        matchIDs[selectedIndex],
-                                                        false,
-                                                        allMatch[
-                                                            selectedIndex])));
-                                      } else if (allMatch[selectedIndex]
-                                              ['matchType'] ==
-                                          "reward") {
-                                        Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (BuildContext
-                                                        context) =>
-                                                    MatchScreen(
-                                                        matchIDs[selectedIndex],
-                                                        true,
-                                                        allMatch[
-                                                            selectedIndex])));
+                                    if (isBanner) {
+                                      if (mounted) {
+                                        setState(() {
+                                          selectedIndex = index;
+                                        });
+                                      }
+                                      if (noAd) {
+                                        if (allMatch[selectedIndex]
+                                                ["matchType"] ==
+                                            "daily") {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (BuildContext
+                                                          context) =>
+                                                      MatchScreen(
+                                                          allMatch[
+                                                                  selectedIndex]
+                                                              ['matchID'],
+                                                          false,
+                                                          allMatch[
+                                                              selectedIndex])));
+                                        } else if (allMatch[selectedIndex]
+                                                ["matchType"] ==
+                                            "reward") {
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (BuildContext
+                                                          context) =>
+                                                      MatchScreen(
+                                                          allMatch[
+                                                                  selectedIndex]
+                                                              ['matchID'],
+                                                          true,
+                                                          allMatch[
+                                                              selectedIndex])));
+                                        }
+                                      } else {
+                                        if (await interstitialAd.isLoaded) {
+                                          interstitialAd.show();
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                                  backgroundColor:
+                                                      Colors.deepPurple,
+                                                  content: Text("Loading...")));
+                                        }
                                       }
                                     } else {
-                                      if (await interstitialAd.isLoaded) {
-                                        interstitialAd.show();
-                                      } else {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                                backgroundColor:
-                                                    Colors.deepPurple,
-                                                content: Text("Loading...")));
-                                      }
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              backgroundColor:
+                                                  Colors.deepPurple,
+                                              content: Text(
+                                                  "Wait for Few seconds ..... Loading")));
                                     }
                                   },
                                 ),
-                                Container(
-                                  child: AdmobBanner(
-                                    adUnitId:
-                                        'ca-app-pub-8553679955744021/8007867168',
-                                    adSize: AdmobBannerSize.BANNER,
-                                    listener: (AdmobAdEvent event,
-                                        Map<String, dynamic> args) {
-                                      switch (event) {
-                                        case AdmobAdEvent.loaded:
-                                          print('New Admob Ad loaded!');
-
-                                          break;
-                                        case AdmobAdEvent.opened:
-                                          print('Admob Ad opened!');
-                                          break;
-                                        case AdmobAdEvent.closed:
-                                          print('Admob Ad closed!');
-                                          break;
-                                        case AdmobAdEvent.failedToLoad:
-                                          print('Admob failed to load. :(');
-                                          break;
-                                        case AdmobAdEvent.clicked:
-                                          print('Admob Ad Clicked');
-                                          break;
-                                        case AdmobAdEvent.completed:
-                                          print('Admob Ad Completed');
-                                          break;
-                                        case AdmobAdEvent.impression:
-                                          print('Admob Ad Impression');
-                                          break;
-                                        case AdmobAdEvent.leftApplication:
-                                          break;
-                                        case AdmobAdEvent.started:
-                                          print('Admob Ad Started');
-                                          break;
-                                        case AdmobAdEvent.rewarded:
-                                          print('Admob Ad Rewarded');
-                                          break;
-                                        default:
-                                          print("ggg");
-                                      }
-                                    },
-                                    onBannerCreated:
-                                        (AdmobBannerController controller) {
-                                      // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
-                                      // Normally you don't need to worry about disposing this yourself, it's handled.
-                                      // If you need direct access to dispose, this is your guy!
-                                      // controller.dispose();
-                                    },
-                                  ),
-                                ),
+                                Container(child: b1),
                                 SizedBox(
                                   height: 10.h,
                                 ),
                               ]);
-                              ;
                             });
                       }
                     }
@@ -656,9 +691,65 @@ class _MatchJoinHostScreenState extends State<MatchJoinHostScreen> {
                       ),
                     );
                   },
-                ))
+                )),
+            SizedBox(
+              height: 60,
+            )
           ],
         ),
+        Positioned(
+          bottom: 0,
+          child: Container(
+            width: 360.w,
+            alignment: Alignment.center,
+            child: AdmobBanner(
+              adUnitId: 'ca-app-pub-7072052726974940/5488771146',
+              adSize: AdmobBannerSize.BANNER,
+              listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+                switch (event) {
+                  case AdmobAdEvent.loaded:
+                    print('New Admob Ad loaded!');
+
+                    break;
+                  case AdmobAdEvent.opened:
+                    print('Admob Ad opened!');
+                    break;
+                  case AdmobAdEvent.closed:
+                    print('Admob Ad closed!');
+                    break;
+                  case AdmobAdEvent.failedToLoad:
+                    print('Admob failed to load. :(');
+                    break;
+                  case AdmobAdEvent.clicked:
+                    print('Admob Ad Clicked');
+                    break;
+                  case AdmobAdEvent.completed:
+                    print('Admob Ad Completed');
+                    break;
+                  case AdmobAdEvent.impression:
+                    print('Admob Ad Impression');
+                    break;
+                  case AdmobAdEvent.leftApplication:
+                    break;
+                  case AdmobAdEvent.started:
+                    print('Admob Ad Started');
+                    break;
+                  case AdmobAdEvent.rewarded:
+                    print('Admob Ad Rewarded');
+                    break;
+                  default:
+                    print("ggg");
+                }
+              },
+              onBannerCreated: (AdmobBannerController controller) {
+                // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+                // Normally you don't need to worry about disposing this yourself, it's handled.
+                // If you need direct access to dispose, this is your guy!
+                // controller.dispose();
+              },
+            ),
+          ),
+        )
       ]),
     ));
   }

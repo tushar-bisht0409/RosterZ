@@ -42,7 +42,7 @@ class _HostScreenState extends State<HostScreen> {
 
   createAd() {
     rewardAd = AdmobReward(
-      adUnitId: "ca-app-pub-8553679955744021/8082376983",
+      adUnitId: 'ca-app-pub-3940256099942544/5224354917',
       listener: (AdmobAdEvent event, Map<String, dynamic> args) {
         switch (event) {
           case AdmobAdEvent.loaded:
