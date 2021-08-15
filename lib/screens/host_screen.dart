@@ -1,4 +1,5 @@
-import 'package:admob_flutter/admob_flutter.dart';
+//import 'package:admob_flutter/admob_flutter.dart';
+import 'package:facebook_audience_network/ad/ad_interstitial.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,7 +20,7 @@ class _HostScreenState extends State<HostScreen> {
   List<String> matchType = ["DAILY", "REWARD"];
   var gameName; // = "PUBG";
   var mType;
-  AdmobReward rewardAd;
+//  AdmobReward rewardAd;
   TextEditingController organizer = TextEditingController();
   TextEditingController maxPlayers = TextEditingController();
   TextEditingController minPlayers = TextEditingController();
@@ -40,63 +41,107 @@ class _HostScreenState extends State<HostScreen> {
   UserBloc uBloc = UserBloc();
   UserInfo uInfo = UserInfo();
 
-  createAd() {
-    rewardAd = AdmobReward(
-      adUnitId: 'ca-app-pub-3940256099942544/5224354917',
-      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
-        switch (event) {
-          case AdmobAdEvent.loaded:
-            print('New Admob Ad loaded!');
+  bool isInterstitialAdLoaded = false;
 
-            break;
-          case AdmobAdEvent.opened:
-            print('Admob Ad opened!');
-            break;
-          case AdmobAdEvent.closed:
-            print('Admob Ad closed!');
-            break;
-          case AdmobAdEvent.failedToLoad:
-            print('Admob failed to load. :(');
+  showInterstitialAd() {
+    if (isInterstitialAdLoaded == true)
+      FacebookInterstitialAd.showInterstitialAd();
+    else
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: Colors.deepPurple, content: Text("Loading...")));
+  }
+
+  void loadInterstitialAd() {
+    FacebookInterstitialAd.loadInterstitialAd(
+      placementId:
+          "1240510383077524_1240541763074386", //"IMG_16_9_APP_INSTALL#2312433698835503_2650502525028617" YOUR_PLACEMENT_ID
+      listener: (result, value) {
+        print(">> FAN > Interstitial Ad: $result --> $value");
+        if (result == InterstitialAdResult.DISPLAYED) {}
+        if (result == InterstitialAdResult.LOADED)
+          isInterstitialAdLoaded = true;
+
+        /// Once an Interstitial Ad has been dismissed and becomes invalidated,
+        /// load a fresh Ad by calling this function.
+        if (result == InterstitialAdResult.DISMISSED &&
+            value["invalidated"] == true) {
+          if (mounted) {
+            setState(() {
+              adCount++;
+            });
+          }
+          if (adCount < 4) {
+            isInterstitialAdLoaded = false;
+            loadInterstitialAd();
+          } else {
             if (mounted) {
               setState(() {
-                adCount++;
+                noAd = true;
               });
             }
-            if (adCount < 4) {
-              createAd();
-            } else {
-              if (mounted) {
-                setState(() {
-                  noAd = true;
-                });
-              }
-            }
-            break;
-          case AdmobAdEvent.clicked:
-            print('Admob Ad Clicked');
-            break;
-          case AdmobAdEvent.completed:
-            print('Admob Ad Completed');
-            break;
-          case AdmobAdEvent.impression:
-            print('Admob Ad Impression');
-            break;
-          case AdmobAdEvent.leftApplication:
-            print('registered');
-            break;
-          case AdmobAdEvent.started:
-            print('Admob Ad Started');
-            break;
-          case AdmobAdEvent.rewarded:
-            print('Admob Ad Rewarded');
-            break;
-          default:
-            print("ggg");
+          }
         }
       },
     );
-    rewardAd.load();
   }
+
+  // createAd() {
+  //   rewardAd = AdmobReward(
+  //     adUnitId: 'ca-app-pub-3940256099942544/5224354917',
+  //     listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+  //       switch (event) {
+  //         case AdmobAdEvent.loaded:
+  //           print('New Admob Ad loaded!');
+
+  //           break;
+  //         case AdmobAdEvent.opened:
+  //           print('Admob Ad opened!');
+  //           break;
+  //         case AdmobAdEvent.closed:
+  //           print('Admob Ad closed!');
+  //           break;
+  //         case AdmobAdEvent.failedToLoad:
+  //           print('Admob failed to load. :(');
+  //           if (mounted) {
+  //             setState(() {
+  //               adCount++;
+  //             });
+  //           }
+  //           if (adCount < 4) {
+  //             createAd();
+  //           } else {
+  //             if (mounted) {
+  //               setState(() {
+  //                 noAd = true;
+  //               });
+  //             }
+  //           }
+  //           break;
+  //         case AdmobAdEvent.clicked:
+  //           print('Admob Ad Clicked');
+  //           break;
+  //         case AdmobAdEvent.completed:
+  //           print('Admob Ad Completed');
+  //           break;
+  //         case AdmobAdEvent.impression:
+  //           print('Admob Ad Impression');
+  //           break;
+  //         case AdmobAdEvent.leftApplication:
+  //           print('registered');
+  //           break;
+  //         case AdmobAdEvent.started:
+  //           print('Admob Ad Started');
+  //           break;
+  //         case AdmobAdEvent.rewarded:
+  //           print('Admob Ad Rewarded');
+  //           break;
+  //         default:
+  //           print("ggg");
+  //       }
+  //     },
+  //   );
+  //   rewardAd.load();
+  // }
 
   void _showDialog() async {
     await showDialog(
@@ -138,7 +183,8 @@ class _HostScreenState extends State<HostScreen> {
   @override
   void initState() {
     super.initState();
-    createAd();
+    //  createAd();
+    loadInterstitialAd();
   }
 
   @override
@@ -1119,7 +1165,7 @@ class _HostScreenState extends State<HostScreen> {
                         uBloc.eventSink.add(uInfo);
                         _showDialog();
                       } else {
-                        if (await rewardAd.isLoaded) {
+                        if (isInterstitialAdLoaded) {
                           matchInfo.actions = "host";
                           matchInfo.organizer = organizer.text;
                           matchInfo.map = maps.text;
@@ -1146,7 +1192,7 @@ class _HostScreenState extends State<HostScreen> {
                           uInfo.type = "host";
                           uInfo.matchID = matchInfo.matchID;
                           uBloc.eventSink.add(uInfo);
-                          rewardAd.show();
+                          showInterstitialAd();
                           _showDialog();
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(SnackBar(

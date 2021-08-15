@@ -1,8 +1,9 @@
-import 'package:admob_flutter/admob_flutter.dart';
+//import 'package:admob_flutter/admob_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:rosterz/main.dart';
+import 'package:facebook_audience_network/ad/ad_banner.dart';
+import 'package:facebook_audience_network/ad/ad_interstitial.dart';
 import 'package:rosterz/screens/allmatch_screen.dart';
 
 class GameScreen extends StatefulWidget {
@@ -15,158 +16,261 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   final _controller = new TextEditingController();
-  AdmobInterstitial interstitialAd;
+  //AdmobInterstitial interstitialAd;
   bool noAd = false;
   int adCount = 0;
   String searchType;
   int bannerAdCount = 0;
   int bannerAdFail = 0;
   bool isBanner = false;
-  AdmobBanner b1;
+  //AdmobBanner b1;
+  bool isInterstitialAdLoaded = false;
 
-  createBannerAd1() {
-    b1 = AdmobBanner(
-      adUnitId: 'ca-app-pub-7072052726974940/5488771146',
-      adSize: AdmobBannerSize.BANNER,
-      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
-        switch (event) {
-          case AdmobAdEvent.loaded:
-            print('New Admob Ad loaded!');
+  showInterstitialAd() {
+    if (isInterstitialAdLoaded == true)
+      FacebookInterstitialAd.showInterstitialAd();
+    else
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          backgroundColor: Colors.deepPurple, content: Text("Loading...")));
+  }
+
+  void loadInterstitialAd() {
+    FacebookInterstitialAd.loadInterstitialAd(
+      placementId:
+          "1240510383077524_1240541763074386", //"IMG_16_9_APP_INSTALL#2312433698835503_2650502525028617" YOUR_PLACEMENT_ID
+      listener: (result, value) {
+        print(">> FAN > Interstitial Ad: $result --> $value");
+        if (result == InterstitialAdResult.DISPLAYED) {
+          if (searchType == 'matchID') {
+            Navigator.of(context).pop();
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => AllMatchScreen(
+                    widget.gameName, "", "matchID", _controller.text, "")));
+          } else if (searchType == 'organizer') {
+            Navigator.of(context).pop();
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) => AllMatchScreen(
+                    widget.gameName, "", "organizer", "", _controller.text)));
+          } else if (searchType == 'game') {
+            Navigator.of(context).pop();
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (BuildContext context) =>
+                    AllMatchScreen(_controller.text, "", "game", "", "")));
+          }
+        }
+        if (result == InterstitialAdResult.LOADED)
+          isInterstitialAdLoaded = true;
+
+        /// Once an Interstitial Ad has been dismissed and becomes invalidated,
+        /// load a fresh Ad by calling this function.
+        if (result == InterstitialAdResult.DISMISSED &&
+            value["invalidated"] == true) {
+          if (mounted) {
+            setState(() {
+              adCount++;
+            });
+          }
+          if (adCount < 4) {
+            isInterstitialAdLoaded = false;
+            loadInterstitialAd();
+          } else {
             if (mounted) {
               setState(() {
-                bannerAdCount++;
+                noAd = true;
+              });
+            }
+          }
+        }
+      },
+    );
+  }
+
+  Widget bannerAd = SizedBox(
+    width: 0.0,
+    height: 0.0,
+  );
+
+  loadBannerAd() {
+    if (mounted) {
+      setState(() {
+        bannerAd = FacebookBannerAd(
+          placementId: "1240510383077524_1240539173074645",
+          // placementId:
+          //     "IMG_16_9_APP_INSTALL#2312433698835503_2964944860251047", //testid
+          bannerSize: BannerSize.STANDARD,
+          listener: (result, value) {
+            if (result == BannerAdResult.LOADED) {
+              if (mounted) {
+                setState(() {
+                  bannerAdCount++;
+                  isBanner = true;
+                });
+              }
+            } else if (result == BannerAdResult.ERROR) {
+              if (bannerAdFail < 2) {
+                if (mounted) {
+                  setState(() {
+                    bannerAdFail++;
+                  });
+                }
+                loadBannerAd();
+              } else {
                 isBanner = true;
-              });
-            }
-            break;
-          case AdmobAdEvent.opened:
-            print('Admob Ad opened!');
-            break;
-          case AdmobAdEvent.closed:
-            print('Admob Ad closed!');
-            break;
-          case AdmobAdEvent.failedToLoad:
-            print('Admob failed to load. :(');
-            if (bannerAdFail < 2) {
-              if (mounted) {
-                setState(() {
-                  bannerAdFail++;
-                  createBannerAd1();
-                });
-              }
-            } else {
-              isBanner = true;
-            }
-            break;
-          case AdmobAdEvent.clicked:
-            print('Admob Ad Clicked');
-            break;
-          case AdmobAdEvent.completed:
-            print('Admob Ad Completed');
-            break;
-          case AdmobAdEvent.impression:
-            print('Admob Ad Impression');
-            break;
-          case AdmobAdEvent.leftApplication:
-            break;
-          case AdmobAdEvent.started:
-            print('Admob Ad Started');
-            break;
-          case AdmobAdEvent.rewarded:
-            print('Admob Ad Rewarded');
-            break;
-          default:
-            print("ggg");
-        }
-      },
-      onBannerCreated: (AdmobBannerController controller) {
-        // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
-        // Normally you don't need to worry about disposing this yourself, it's handled.
-        // If you need direct access to dispose, this is your guy!
-        // controller.dispose();
-      },
-    );
-  }
-
-  createAd() {
-    interstitialAd = AdmobInterstitial(
-      adUnitId: 'ca-app-pub-7072052726974940/3537680635',
-      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
-        switch (event) {
-          case AdmobAdEvent.loaded:
-            print('New Admob Ad loaded!');
-
-            break;
-          case AdmobAdEvent.opened:
-            print('Admob Ad opened!');
-            break;
-          case AdmobAdEvent.closed:
-            print('Admob Ad closed!');
-            interstitialAd.load();
-            if (searchType == 'matchID') {
-              Navigator.of(context).pop();
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => AllMatchScreen(
-                      widget.gameName, "", "matchID", _controller.text, "")));
-            } else if (searchType == 'organizer') {
-              Navigator.of(context).pop();
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) => AllMatchScreen(
-                      widget.gameName, "", "organizer", "", _controller.text)));
-            } else if (searchType == 'game') {
-              Navigator.of(context).pop();
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (BuildContext context) =>
-                      AllMatchScreen(_controller.text, "", "game", "", "")));
-            }
-            break;
-          case AdmobAdEvent.failedToLoad:
-            print('Admob failed to load. :(');
-            if (mounted) {
-              setState(() {
-                adCount++;
-              });
-            }
-            if (adCount < 4) {
-              createAd();
-            } else {
-              if (mounted) {
-                setState(() {
-                  noAd = true;
-                });
               }
             }
-            break;
-          case AdmobAdEvent.clicked:
-            print('Admob Ad Clicked');
-            break;
-          case AdmobAdEvent.completed:
-            print('Admob Ad Completed');
-            break;
-          case AdmobAdEvent.impression:
-            print('Admob Ad Impression');
-            break;
-          case AdmobAdEvent.leftApplication:
-            break;
-          case AdmobAdEvent.started:
-            print('Admob Ad Started');
-            break;
-          case AdmobAdEvent.rewarded:
-            print('Admob Ad Rewarded');
-            break;
-          default:
-            print("ggg");
-        }
-      },
-    );
-    interstitialAd.load();
+            print("Banner Ad: $result -->  $value");
+          },
+        );
+      });
+    }
+    return bannerAd;
   }
+
+  // createBannerAd1() {
+  //   b1 = AdmobBanner(
+  //     adUnitId: 'ca-app-pub-7072052726974940/5488771146',
+  //     adSize: AdmobBannerSize.BANNER,
+  //     listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+  //       switch (event) {
+  //         case AdmobAdEvent.loaded:
+  //           print('New Admob Ad loaded!');
+  //           if (mounted) {
+  //             setState(() {
+  //               bannerAdCount++;
+  //               isBanner = true;
+  //             });
+  //           }
+  //           break;
+  //         case AdmobAdEvent.opened:
+  //           print('Admob Ad opened!');
+  //           break;
+  //         case AdmobAdEvent.closed:
+  //           print('Admob Ad closed!');
+  //           break;
+  //         case AdmobAdEvent.failedToLoad:
+  //           print('Admob failed to load. :(');
+  //           if (bannerAdFail < 2) {
+  //             if (mounted) {
+  //               setState(() {
+  //                 bannerAdFail++;
+  //                 createBannerAd1();
+  //               });
+  //             }
+  //           } else {
+  //             isBanner = true;
+  //           }
+  //           break;
+  //         case AdmobAdEvent.clicked:
+  //           print('Admob Ad Clicked');
+  //           break;
+  //         case AdmobAdEvent.completed:
+  //           print('Admob Ad Completed');
+  //           break;
+  //         case AdmobAdEvent.impression:
+  //           print('Admob Ad Impression');
+  //           break;
+  //         case AdmobAdEvent.leftApplication:
+  //           break;
+  //         case AdmobAdEvent.started:
+  //           print('Admob Ad Started');
+  //           break;
+  //         case AdmobAdEvent.rewarded:
+  //           print('Admob Ad Rewarded');
+  //           break;
+  //         default:
+  //           print("ggg");
+  //       }
+  //     },
+  //     onBannerCreated: (AdmobBannerController controller) {
+  //       // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+  //       // Normally you don't need to worry about disposing this yourself, it's handled.
+  //       // If you need direct access to dispose, this is your guy!
+  //       // controller.dispose();
+  //     },
+  //   );
+  // }
+
+  // createAd() {
+  //   interstitialAd = AdmobInterstitial(
+  //     adUnitId: 'ca-app-pub-7072052726974940/3537680635',
+  //     listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+  //       switch (event) {
+  //         case AdmobAdEvent.loaded:
+  //           print('New Admob Ad loaded!');
+
+  //           break;
+  //         case AdmobAdEvent.opened:
+  //           print('Admob Ad opened!');
+  //           break;
+  //         case AdmobAdEvent.closed:
+  //           print('Admob Ad closed!');
+  //           interstitialAd.load();
+  //           if (searchType == 'matchID') {
+  //             Navigator.of(context).pop();
+  //             Navigator.of(context).push(MaterialPageRoute(
+  //                 builder: (BuildContext context) => AllMatchScreen(
+  //                     widget.gameName, "", "matchID", _controller.text, "")));
+  //           } else if (searchType == 'organizer') {
+  //             Navigator.of(context).pop();
+  //             Navigator.of(context).push(MaterialPageRoute(
+  //                 builder: (BuildContext context) => AllMatchScreen(
+  //                     widget.gameName, "", "organizer", "", _controller.text)));
+  //           } else if (searchType == 'game') {
+  //             Navigator.of(context).pop();
+  //             Navigator.of(context).push(MaterialPageRoute(
+  //                 builder: (BuildContext context) =>
+  //                     AllMatchScreen(_controller.text, "", "game", "", "")));
+  //           }
+  //           break;
+  //         case AdmobAdEvent.failedToLoad:
+  //           print('Admob failed to load. :(');
+  //           if (mounted) {
+  //             setState(() {
+  //               adCount++;
+  //             });
+  //           }
+  //           if (adCount < 4) {
+  //             createAd();
+  //           } else {
+  //             if (mounted) {
+  //               setState(() {
+  //                 noAd = true;
+  //               });
+  //             }
+  //           }
+  //           break;
+  //         case AdmobAdEvent.clicked:
+  //           print('Admob Ad Clicked');
+  //           break;
+  //         case AdmobAdEvent.completed:
+  //           print('Admob Ad Completed');
+  //           break;
+  //         case AdmobAdEvent.impression:
+  //           print('Admob Ad Impression');
+  //           break;
+  //         case AdmobAdEvent.leftApplication:
+  //           break;
+  //         case AdmobAdEvent.started:
+  //           print('Admob Ad Started');
+  //           break;
+  //         case AdmobAdEvent.rewarded:
+  //           print('Admob Ad Rewarded');
+  //           break;
+  //         default:
+  //           print("ggg");
+  //       }
+  //     },
+  //   );
+  //   interstitialAd.load();
+  // }
 
   @override
   void initState() {
     super.initState();
-    createAd();
-    createBannerAd1();
+    // createAd();
+    // createBannerAd1();
+    //loadInterstitialAd();
+    loadBannerAd();
   }
 
   @override
@@ -176,6 +280,8 @@ class _GameScreenState extends State<GameScreen> {
         [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     return SafeArea(
         child: Scaffold(
+      floatingActionButton: Container(child: bannerAd //b1
+          ),
       body: Stack(alignment: Alignment.bottomCenter, children: <Widget>[
         Container(
           height: double.infinity,
@@ -457,19 +563,66 @@ class _GameScreenState extends State<GameScreen> {
                                                                         .text,
                                                                     "")));
                                                   } else {
-                                                    if (await interstitialAd
-                                                        .isLoaded) {
-                                                      interstitialAd.show();
-                                                    } else {
-                                                      ScaffoldMessenger
-                                                              .of(context)
-                                                          .showSnackBar(SnackBar(
-                                                              backgroundColor:
-                                                                  Colors
-                                                                      .deepPurple,
-                                                              content: Text(
-                                                                  "Loading...")));
+                                                    if (searchType ==
+                                                        'matchID') {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  AllMatchScreen(
+                                                                      widget
+                                                                          .gameName,
+                                                                      "",
+                                                                      "matchID",
+                                                                      _controller
+                                                                          .text,
+                                                                      "")));
+                                                    } else if (searchType ==
+                                                        'organizer') {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  AllMatchScreen(
+                                                                      widget
+                                                                          .gameName,
+                                                                      "",
+                                                                      "organizer",
+                                                                      "",
+                                                                      _controller
+                                                                          .text)));
+                                                    } else if (searchType ==
+                                                        'game') {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  AllMatchScreen(
+                                                                      _controller
+                                                                          .text,
+                                                                      "",
+                                                                      "game",
+                                                                      "",
+                                                                      "")));
                                                     }
+                                                    // if (isInterstitialAdLoaded) {
+                                                    //   showInterstitialAd();
+                                                    // } else {
+                                                    //   ScaffoldMessenger
+                                                    //           .of(context)
+                                                    //       .showSnackBar(SnackBar(
+                                                    //           backgroundColor:
+                                                    //               Colors
+                                                    //                   .deepPurple,
+                                                    //           content: Text(
+                                                    //               "Loading...")));
+                                                    // }
                                                   }
                                                 }
                                               },
@@ -507,19 +660,66 @@ class _GameScreenState extends State<GameScreen> {
                                                                     _controller
                                                                         .text)));
                                                   } else {
-                                                    if (await interstitialAd
-                                                        .isLoaded) {
-                                                      interstitialAd.show();
-                                                    } else {
-                                                      ScaffoldMessenger
-                                                              .of(context)
-                                                          .showSnackBar(SnackBar(
-                                                              backgroundColor:
-                                                                  Colors
-                                                                      .deepPurple,
-                                                              content: Text(
-                                                                  "Loading...")));
+                                                    if (searchType ==
+                                                        'matchID') {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  AllMatchScreen(
+                                                                      widget
+                                                                          .gameName,
+                                                                      "",
+                                                                      "matchID",
+                                                                      _controller
+                                                                          .text,
+                                                                      "")));
+                                                    } else if (searchType ==
+                                                        'organizer') {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  AllMatchScreen(
+                                                                      widget
+                                                                          .gameName,
+                                                                      "",
+                                                                      "organizer",
+                                                                      "",
+                                                                      _controller
+                                                                          .text)));
+                                                    } else if (searchType ==
+                                                        'game') {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  AllMatchScreen(
+                                                                      _controller
+                                                                          .text,
+                                                                      "",
+                                                                      "game",
+                                                                      "",
+                                                                      "")));
                                                     }
+                                                    // if (isInterstitialAdLoaded) {
+                                                    //   showInterstitialAd();
+                                                    // } else {
+                                                    //   ScaffoldMessenger
+                                                    //           .of(context)
+                                                    //       .showSnackBar(SnackBar(
+                                                    //           backgroundColor:
+                                                    //               Colors
+                                                    //                   .deepPurple,
+                                                    //           content: Text(
+                                                    //               "Loading...")));
+                                                    // }
                                                   }
                                                 }
                                               },
@@ -556,19 +756,66 @@ class _GameScreenState extends State<GameScreen> {
                                                                     "",
                                                                     "")));
                                                   } else {
-                                                    if (await interstitialAd
-                                                        .isLoaded) {
-                                                      interstitialAd.show();
-                                                    } else {
-                                                      ScaffoldMessenger
-                                                              .of(context)
-                                                          .showSnackBar(SnackBar(
-                                                              backgroundColor:
-                                                                  Colors
-                                                                      .deepPurple,
-                                                              content: Text(
-                                                                  "Loading...")));
+                                                    if (searchType ==
+                                                        'matchID') {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  AllMatchScreen(
+                                                                      widget
+                                                                          .gameName,
+                                                                      "",
+                                                                      "matchID",
+                                                                      _controller
+                                                                          .text,
+                                                                      "")));
+                                                    } else if (searchType ==
+                                                        'organizer') {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  AllMatchScreen(
+                                                                      widget
+                                                                          .gameName,
+                                                                      "",
+                                                                      "organizer",
+                                                                      "",
+                                                                      _controller
+                                                                          .text)));
+                                                    } else if (searchType ==
+                                                        'game') {
+                                                      Navigator.of(context)
+                                                          .pop();
+                                                      Navigator.of(context).push(
+                                                          MaterialPageRoute(
+                                                              builder: (BuildContext
+                                                                      context) =>
+                                                                  AllMatchScreen(
+                                                                      _controller
+                                                                          .text,
+                                                                      "",
+                                                                      "game",
+                                                                      "",
+                                                                      "")));
                                                     }
+                                                    // if (isInterstitialAdLoaded) {
+                                                    //   showInterstitialAd();
+                                                    // } else {
+                                                    //   ScaffoldMessenger
+                                                    //           .of(context)
+                                                    //       .showSnackBar(SnackBar(
+                                                    //           backgroundColor:
+                                                    //               Colors
+                                                    //                   .deepPurple,
+                                                    //           content: Text(
+                                                    //               "Loading...")));
+                                                    // }
                                                   }
                                                 }
                                               },
@@ -611,7 +858,8 @@ class _GameScreenState extends State<GameScreen> {
             SizedBox(
               height: 10.h,
             ),
-            Container(child: b1),
+            Container(child: bannerAd //b1
+                ),
             Container(
               padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 20.w),
               width: double.infinity,
@@ -717,7 +965,8 @@ class _GameScreenState extends State<GameScreen> {
                   SizedBox(
                     height: 10.h,
                   ),
-                  Container(child: b1),
+                  Container(child: bannerAd //b1
+                      ),
                   SizedBox(
                     height: 10.h,
                   ),
@@ -818,55 +1067,55 @@ class _GameScreenState extends State<GameScreen> {
                   SizedBox(
                     height: 10.h,
                   ),
-                  Container(
-                    child: AdmobBanner(
-                      adUnitId: 'ca-app-pub-7072052726974940/5488771146',
-                      adSize: AdmobBannerSize.BANNER,
-                      listener:
-                          (AdmobAdEvent event, Map<String, dynamic> args) {
-                        switch (event) {
-                          case AdmobAdEvent.loaded:
-                            print('New Admob Ad loaded!');
+                  Container(child: bannerAd
+                      // AdmobBanner(
+                      //   adUnitId: 'ca-app-pub-7072052726974940/5488771146',
+                      //   adSize: AdmobBannerSize.BANNER,
+                      //   listener:
+                      //       (AdmobAdEvent event, Map<String, dynamic> args) {
+                      //     switch (event) {
+                      //       case AdmobAdEvent.loaded:
+                      //         print('New Admob Ad loaded!');
 
-                            break;
-                          case AdmobAdEvent.opened:
-                            print('Admob Ad opened!');
-                            break;
-                          case AdmobAdEvent.closed:
-                            print('Admob Ad closed!');
-                            break;
-                          case AdmobAdEvent.failedToLoad:
-                            print('Admob failed to load. :(');
-                            break;
-                          case AdmobAdEvent.clicked:
-                            print('Admob Ad Clicked');
-                            break;
-                          case AdmobAdEvent.completed:
-                            print('Admob Ad Completed');
-                            break;
-                          case AdmobAdEvent.impression:
-                            print('Admob Ad Impression');
-                            break;
-                          case AdmobAdEvent.leftApplication:
-                            break;
-                          case AdmobAdEvent.started:
-                            print('Admob Ad Started');
-                            break;
-                          case AdmobAdEvent.rewarded:
-                            print('Admob Ad Rewarded');
-                            break;
-                          default:
-                            print("ggg");
-                        }
-                      },
-                      onBannerCreated: (AdmobBannerController controller) {
-                        // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
-                        // Normally you don't need to worry about disposing this yourself, it's handled.
-                        // If you need direct access to dispose, this is your guy!
-                        // controller.dispose();
-                      },
-                    ),
-                  ),
+                      //         break;
+                      //       case AdmobAdEvent.opened:
+                      //         print('Admob Ad opened!');
+                      //         break;
+                      //       case AdmobAdEvent.closed:
+                      //         print('Admob Ad closed!');
+                      //         break;
+                      //       case AdmobAdEvent.failedToLoad:
+                      //         print('Admob failed to load. :(');
+                      //         break;
+                      //       case AdmobAdEvent.clicked:
+                      //         print('Admob Ad Clicked');
+                      //         break;
+                      //       case AdmobAdEvent.completed:
+                      //         print('Admob Ad Completed');
+                      //         break;
+                      //       case AdmobAdEvent.impression:
+                      //         print('Admob Ad Impression');
+                      //         break;
+                      //       case AdmobAdEvent.leftApplication:
+                      //         break;
+                      //       case AdmobAdEvent.started:
+                      //         print('Admob Ad Started');
+                      //         break;
+                      //       case AdmobAdEvent.rewarded:
+                      //         print('Admob Ad Rewarded');
+                      //         break;
+                      //       default:
+                      //         print("ggg");
+                      //     }
+                      //   },
+                      //   onBannerCreated: (AdmobBannerController controller) {
+                      //     // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+                      //     // Normally you don't need to worry about disposing this yourself, it's handled.
+                      //     // If you need direct access to dispose, this is your guy!
+                      //     // controller.dispose();
+                      //   },
+                      // ),
+                      ),
                   SizedBox(
                     height: 10.h,
                   ),
@@ -915,10 +1164,6 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ],
         ),
-        Positioned(
-          bottom: 0,
-          child: Container(child: b1),
-        )
       ]),
     ));
   }

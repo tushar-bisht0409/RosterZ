@@ -1,4 +1,5 @@
-import 'package:admob_flutter/admob_flutter.dart';
+//import 'package:admob_flutter/admob_flutter.dart';
+import 'package:facebook_audience_network/ad/ad_banner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,6 +9,7 @@ import 'package:rosterz/main.dart';
 import 'package:rosterz/models/match_info.dart';
 import 'package:rosterz/models/user_info.dart';
 import 'package:rosterz/payment.dart';
+import 'package:rosterz/screens/banner_screen.dart';
 import 'package:rosterz/screens/result_screen.dart';
 
 class MatchScreen extends StatefulWidget {
@@ -23,7 +25,7 @@ class MatchScreen extends StatefulWidget {
 class _MatchScreenState extends State<MatchScreen> {
   TextEditingController teamName = TextEditingController();
   TextEditingController playerName = TextEditingController();
-  AdmobReward rewardAd;
+  //AdmobReward rewardAd;
   String dropdownValue = "";
   var joinCreate;
   List<String> teamList = [""];
@@ -45,71 +47,114 @@ class _MatchScreenState extends State<MatchScreen> {
   int bannerAdCount = 0;
   int bannerAdFail = 0;
   bool isBanner = false;
-  AdmobBanner b1;
+  // AdmobBanner b1;
 
-  createBannerAd1() {
-    b1 = AdmobBanner(
-      adUnitId: 'ca-app-pub-7072052726974940/5488771146',
-      adSize: AdmobBannerSize.BANNER,
-      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
-        switch (event) {
-          case AdmobAdEvent.loaded:
-            print('New Admob Ad loaded!');
-            if (mounted) {
-              setState(() {
-                bannerAdCount++;
-                isBanner = true;
-              });
-            }
-            break;
-          case AdmobAdEvent.opened:
-            print('Admob Ad opened!');
-            break;
-          case AdmobAdEvent.closed:
-            print('Admob Ad closed!');
-            break;
-          case AdmobAdEvent.failedToLoad:
-            print('Admob failed to load. :(');
-            if (bannerAdFail < 2) {
+  bool isInterstitialAdLoaded = false;
+
+  Widget bannerAd = SizedBox(
+    width: 0.0,
+    height: 0.0,
+  );
+
+  loadBannerAd() {
+    if (mounted) {
+      setState(() {
+        bannerAd = FacebookBannerAd(
+          placementId: "1240510383077524_1240539173074645",
+          // placementId:
+          //     "IMG_16_9_APP_INSTALL#2312433698835503_2964944860251047", //testid
+          bannerSize: BannerSize.STANDARD,
+          listener: (result, value) {
+            if (result == BannerAdResult.LOADED) {
               if (mounted) {
                 setState(() {
-                  bannerAdFail++;
-                  createBannerAd1();
+                  bannerAdCount++;
+                  isBanner = true;
                 });
               }
-            } else {
-              isBanner = true;
+            } else if (result == BannerAdResult.ERROR) {
+              if (bannerAdFail < 2) {
+                if (mounted) {
+                  setState(() {
+                    bannerAdFail++;
+                  });
+                }
+                loadBannerAd();
+              } else {
+                isBanner = true;
+              }
             }
-            break;
-          case AdmobAdEvent.clicked:
-            print('Admob Ad Clicked');
-            break;
-          case AdmobAdEvent.completed:
-            print('Admob Ad Completed');
-            break;
-          case AdmobAdEvent.impression:
-            print('Admob Ad Impression');
-            break;
-          case AdmobAdEvent.leftApplication:
-            break;
-          case AdmobAdEvent.started:
-            print('Admob Ad Started');
-            break;
-          case AdmobAdEvent.rewarded:
-            print('Admob Ad Rewarded');
-            break;
-          default:
-            print("ggg");
-        }
-      },
-      onBannerCreated: (AdmobBannerController controller) {
-        // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
-        // Normally you don't need to worry about disposing this yourself, it's handled.
-        // If you need direct access to dispose, this is your guy!
-        // controller.dispose();
-      },
-    );
+            print("Banner Ad: $result -->  $value");
+          },
+        );
+      });
+    }
+    return bannerAd;
   }
+
+  // createBannerAd1() {
+  //   b1 = AdmobBanner(
+  //     adUnitId: 'ca-app-pub-7072052726974940/5488771146',
+  //     adSize: AdmobBannerSize.BANNER,
+  //     listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+  //       switch (event) {
+  //         case AdmobAdEvent.loaded:
+  //           print('New Admob Ad loaded!');
+  //           if (mounted) {
+  //             setState(() {
+  //               bannerAdCount++;
+  //               isBanner = true;
+  //             });
+  //           }
+  //           break;
+  //         case AdmobAdEvent.opened:
+  //           print('Admob Ad opened!');
+  //           break;
+  //         case AdmobAdEvent.closed:
+  //           print('Admob Ad closed!');
+  //           break;
+  //         case AdmobAdEvent.failedToLoad:
+  //           print('Admob failed to load. :(');
+  //           if (bannerAdFail < 2) {
+  //             if (mounted) {
+  //               setState(() {
+  //                 bannerAdFail++;
+  //                 createBannerAd1();
+  //               });
+  //             }
+  //           } else {
+  //             isBanner = true;
+  //           }
+  //           break;
+  //         case AdmobAdEvent.clicked:
+  //           print('Admob Ad Clicked');
+  //           break;
+  //         case AdmobAdEvent.completed:
+  //           print('Admob Ad Completed');
+  //           break;
+  //         case AdmobAdEvent.impression:
+  //           print('Admob Ad Impression');
+  //           break;
+  //         case AdmobAdEvent.leftApplication:
+  //           break;
+  //         case AdmobAdEvent.started:
+  //           print('Admob Ad Started');
+  //           break;
+  //         case AdmobAdEvent.rewarded:
+  //           print('Admob Ad Rewarded');
+  //           break;
+  //         default:
+  //           print("ggg");
+  //       }
+  //     },
+  //     onBannerCreated: (AdmobBannerController controller) {
+  //       // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+  //       // Normally you don't need to worry about disposing this yourself, it's handled.
+  //       // If you need direct access to dispose, this is your guy!
+  //       // controller.dispose();
+  //     },
+  //   );
+  // }
 
   void _showDialog() async {
     await showDialog(
@@ -163,93 +208,94 @@ class _MatchScreenState extends State<MatchScreen> {
     notiusers.actions = 'gettokenlist';
     notiusers.userIDs = widget.mInfo['registeredBy'];
     listBloc.eventSink.add(notiusers);
-    createBannerAd1();
-    rewardAd = AdmobReward(
-      adUnitId: 'ca-app-pub-3940256099942544/5224354917',
-      listener: (AdmobAdEvent event, Map<String, dynamic> args) {
-        switch (event) {
-          case AdmobAdEvent.loaded:
-            print('New Admob Ad loaded!');
+    loadBannerAd();
+    // createBannerAd1();
+    // rewardAd = AdmobReward(
+    //   adUnitId: 'ca-app-pub-3940256099942544/5224354917',
+    //   listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+    //     switch (event) {
+    //       case AdmobAdEvent.loaded:
+    //         print('New Admob Ad loaded!');
 
-            break;
-          case AdmobAdEvent.opened:
-            print('Admob Ad opened!');
-            break;
-          case AdmobAdEvent.closed:
-            print('Admob Ad closed!');
-            break;
-          case AdmobAdEvent.failedToLoad:
-            print('Admob failed to load. :(');
-            break;
-          case AdmobAdEvent.clicked:
-            print('Admob Ad Clicked');
-            break;
-          case AdmobAdEvent.completed:
-            print('Admob Ad Completed');
-            break;
-          case AdmobAdEvent.impression:
-            print('Admob Ad Impression');
-            break;
-          case AdmobAdEvent.leftApplication:
-            print('registered');
-            if (joinCreate == "join") {
-              if (mounted) {
-                setState(() {
-                  isLoading = true;
-                  regInfo.actions = "register";
-                  regInfo.type = "join";
-                  regInfo.matchID = widget.matchID; //widget.matchID
-                  regInfo.player = playerName.text;
-                  regInfo.teamName = dropdownValue;
-                  regInfo.matchType = "reward";
-                  regInfo.teamID = teamIDs["$dropdownValue"];
-                  widget.mInfo["registeredBy"].add(userID);
+    //         break;
+    //       case AdmobAdEvent.opened:
+    //         print('Admob Ad opened!');
+    //         break;
+    //       case AdmobAdEvent.closed:
+    //         print('Admob Ad closed!');
+    //         break;
+    //       case AdmobAdEvent.failedToLoad:
+    //         print('Admob failed to load. :(');
+    //         break;
+    //       case AdmobAdEvent.clicked:
+    //         print('Admob Ad Clicked');
+    //         break;
+    //       case AdmobAdEvent.completed:
+    //         print('Admob Ad Completed');
+    //         break;
+    //       case AdmobAdEvent.impression:
+    //         print('Admob Ad Impression');
+    //         break;
+    //       case AdmobAdEvent.leftApplication:
+    //         print('registered');
+    //         if (joinCreate == "join") {
+    //           if (mounted) {
+    //             setState(() {
+    //               isLoading = true;
+    //               regInfo.actions = "register";
+    //               regInfo.type = "join";
+    //               regInfo.matchID = widget.matchID; //widget.matchID
+    //               regInfo.player = playerName.text;
+    //               regInfo.teamName = dropdownValue;
+    //               regInfo.matchType = "reward";
+    //               regInfo.teamID = teamIDs["$dropdownValue"];
+    //               widget.mInfo["registeredBy"].add(userID);
 
-                  registerBloc.eventSink.add(regInfo);
-                  uInfo.actions = "joinhost";
-                  uInfo.type = "join";
-                  uInfo.matchID = widget.matchID;
-                  uBloc.eventSink.add(uInfo);
-                  Navigator.of(context).pop();
-                  _showDialog();
-                });
-              }
-            } else if (joinCreate == "create") {
-              if (mounted) {
-                setState(() {
-                  isLoading = true;
-                  regInfo.actions = "register";
-                  regInfo.type = "create";
-                  regInfo.matchID = widget.matchID; //widget.matchID
-                  regInfo.player = playerName.text;
-                  regInfo.teamName = teamName.text;
-                  regInfo.matchType = "reward";
-                  regInfo.teamID =
-                      "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
-                  widget.mInfo["registeredBy"].add(userID);
-                  registerBloc.eventSink.add(regInfo);
-                  uInfo.actions = "joinhost";
-                  uInfo.type = "join";
-                  uInfo.matchID = widget.matchID;
-                  uBloc.eventSink.add(uInfo);
-                  Navigator.of(context).pop();
-                  _showDialog();
-                });
-              }
-            }
-            break;
-          case AdmobAdEvent.started:
-            print('Admob Ad Started');
-            break;
-          case AdmobAdEvent.rewarded:
-            print('Admob Ad Rewarded');
-            break;
-          default:
-            print("ggg");
-        }
-      },
-    );
-    rewardAd.load();
+    //               registerBloc.eventSink.add(regInfo);
+    //               uInfo.actions = "joinhost";
+    //               uInfo.type = "join";
+    //               uInfo.matchID = widget.matchID;
+    //               uBloc.eventSink.add(uInfo);
+    //               Navigator.of(context).pop();
+    //               _showDialog();
+    //             });
+    //           }
+    //         } else if (joinCreate == "create") {
+    //           if (mounted) {
+    //             setState(() {
+    //               isLoading = true;
+    //               regInfo.actions = "register";
+    //               regInfo.type = "create";
+    //               regInfo.matchID = widget.matchID; //widget.matchID
+    //               regInfo.player = playerName.text;
+    //               regInfo.teamName = teamName.text;
+    //               regInfo.matchType = "reward";
+    //               regInfo.teamID =
+    //                   "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
+    //               widget.mInfo["registeredBy"].add(userID);
+    //               registerBloc.eventSink.add(regInfo);
+    //               uInfo.actions = "joinhost";
+    //               uInfo.type = "join";
+    //               uInfo.matchID = widget.matchID;
+    //               uBloc.eventSink.add(uInfo);
+    //               Navigator.of(context).pop();
+    //               _showDialog();
+    //             });
+    //           }
+    //         }
+    //         break;
+    //       case AdmobAdEvent.started:
+    //         print('Admob Ad Started');
+    //         break;
+    //       case AdmobAdEvent.rewarded:
+    //         print('Admob Ad Rewarded');
+    //         break;
+    //       default:
+    //         print("ggg");
+    //     }
+    //   },
+    // );
+    // rewardAd.load();
   }
 
   @override
@@ -323,7 +369,10 @@ class _MatchScreenState extends State<MatchScreen> {
                       ),
                     ),
                     Container(
-                        width: 360.w, alignment: Alignment.center, child: b1),
+                        width: 360.w,
+                        alignment: Alignment.center,
+                        child: bannerAd //b1
+                        ),
                     StreamBuilder(
                         stream: listBloc.userStream,
                         builder: (ctx, sss) {
@@ -658,7 +707,8 @@ class _MatchScreenState extends State<MatchScreen> {
                                   ),
                                 ))
                               : SizedBox(),
-                          Container(child: b1),
+                          //  Container(child: b1),
+                          Container(child: bannerAd),
                           Container(
                               //   margin: EdgeInsets.only(top: 30.h),
                               //       height: 1200.h,
@@ -734,82 +784,83 @@ class _MatchScreenState extends State<MatchScreen> {
                                                 index != 0
                                                     ? index % 5 == 0
                                                         ? Container(
-                                                            child: AdmobBanner(
-                                                              adUnitId:
-                                                                  'ca-app-pub-7072052726974940/5488771146',
-                                                              adSize:
-                                                                  AdmobBannerSize
-                                                                      .BANNER,
-                                                              listener: (AdmobAdEvent
-                                                                      event,
-                                                                  Map<String,
-                                                                          dynamic>
-                                                                      args) {
-                                                                switch (event) {
-                                                                  case AdmobAdEvent
-                                                                      .loaded:
-                                                                    print(
-                                                                        'New Admob Ad loaded!');
+                                                            child: bannerAd
+                                                            // AdmobBanner(
+                                                            //   adUnitId:
+                                                            //       'ca-app-pub-7072052726974940/5488771146',
+                                                            //   adSize:
+                                                            //       AdmobBannerSize
+                                                            //           .BANNER,
+                                                            //   listener: (AdmobAdEvent
+                                                            //           event,
+                                                            //       Map<String,
+                                                            //               dynamic>
+                                                            //           args) {
+                                                            //     switch (event) {
+                                                            //       case AdmobAdEvent
+                                                            //           .loaded:
+                                                            //         print(
+                                                            //             'New Admob Ad loaded!');
 
-                                                                    break;
-                                                                  case AdmobAdEvent
-                                                                      .opened:
-                                                                    print(
-                                                                        'Admob Ad opened!');
-                                                                    break;
-                                                                  case AdmobAdEvent
-                                                                      .closed:
-                                                                    print(
-                                                                        'Admob Ad closed!');
-                                                                    break;
-                                                                  case AdmobAdEvent
-                                                                      .failedToLoad:
-                                                                    print(
-                                                                        'Admob failed to load. :(');
-                                                                    break;
-                                                                  case AdmobAdEvent
-                                                                      .clicked:
-                                                                    print(
-                                                                        'Admob Ad Clicked');
-                                                                    break;
-                                                                  case AdmobAdEvent
-                                                                      .completed:
-                                                                    print(
-                                                                        'Admob Ad Completed');
-                                                                    break;
-                                                                  case AdmobAdEvent
-                                                                      .impression:
-                                                                    print(
-                                                                        'Admob Ad Impression');
-                                                                    break;
-                                                                  case AdmobAdEvent
-                                                                      .leftApplication:
-                                                                    break;
-                                                                  case AdmobAdEvent
-                                                                      .started:
-                                                                    print(
-                                                                        'Admob Ad Started');
-                                                                    break;
-                                                                  case AdmobAdEvent
-                                                                      .rewarded:
-                                                                    print(
-                                                                        'Admob Ad Rewarded');
-                                                                    break;
-                                                                  default:
-                                                                    print(
-                                                                        "ggg");
-                                                                }
-                                                              },
-                                                              onBannerCreated:
-                                                                  (AdmobBannerController
-                                                                      controller) {
-                                                                // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
-                                                                // Normally you don't need to worry about disposing this yourself, it's handled.
-                                                                // If you need direct access to dispose, this is your guy!
-                                                                // controller.dispose();
-                                                              },
-                                                            ),
-                                                          )
+                                                            //         break;
+                                                            //       case AdmobAdEvent
+                                                            //           .opened:
+                                                            //         print(
+                                                            //             'Admob Ad opened!');
+                                                            //         break;
+                                                            //       case AdmobAdEvent
+                                                            //           .closed:
+                                                            //         print(
+                                                            //             'Admob Ad closed!');
+                                                            //         break;
+                                                            //       case AdmobAdEvent
+                                                            //           .failedToLoad:
+                                                            //         print(
+                                                            //             'Admob failed to load. :(');
+                                                            //         break;
+                                                            //       case AdmobAdEvent
+                                                            //           .clicked:
+                                                            //         print(
+                                                            //             'Admob Ad Clicked');
+                                                            //         break;
+                                                            //       case AdmobAdEvent
+                                                            //           .completed:
+                                                            //         print(
+                                                            //             'Admob Ad Completed');
+                                                            //         break;
+                                                            //       case AdmobAdEvent
+                                                            //           .impression:
+                                                            //         print(
+                                                            //             'Admob Ad Impression');
+                                                            //         break;
+                                                            //       case AdmobAdEvent
+                                                            //           .leftApplication:
+                                                            //         break;
+                                                            //       case AdmobAdEvent
+                                                            //           .started:
+                                                            //         print(
+                                                            //             'Admob Ad Started');
+                                                            //         break;
+                                                            //       case AdmobAdEvent
+                                                            //           .rewarded:
+                                                            //         print(
+                                                            //             'Admob Ad Rewarded');
+                                                            //         break;
+                                                            //       default:
+                                                            //         print(
+                                                            //             "ggg");
+                                                            //     }
+                                                            //   },
+                                                            //   onBannerCreated:
+                                                            //       (AdmobBannerController
+                                                            //           controller) {
+                                                            //     // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+                                                            //     // Normally you don't need to worry about disposing this yourself, it's handled.
+                                                            //     // If you need direct access to dispose, this is your guy!
+                                                            //     // controller.dispose();
+                                                            //   },
+                                                            // ),
+                                                            )
                                                         : SizedBox()
                                                     : SizedBox(),
                                                 GestureDetector(
@@ -924,7 +975,8 @@ class _MatchScreenState extends State<MatchScreen> {
                         ),
                         width: 360.w,
                         alignment: Alignment.center,
-                        child: b1),
+                        child: bannerAd //b1
+                        ),
                     Container(
                         alignment: Alignment.center,
                         width: ScreenUtil().setWidth(360),
@@ -942,10 +994,12 @@ class _MatchScreenState extends State<MatchScreen> {
                                   ? Colors.black
                                   : isRegistered()
                                       ? Colors.deepPurple
-                                      : widget.mInfo["teams"].length ==
-                                              int.parse(
-                                                  widget.mInfo["totalSlots"])
-                                          ? Colors.red
+                                      : widget.isReward == false
+                                          ? widget.mInfo["teams"].length >=
+                                                  int.parse(widget
+                                                      .mInfo["totalSlots"])
+                                              ? Colors.red
+                                              : Colors.black
                                           : Colors.black,
                             ),
                             child: Center(
@@ -1230,10 +1284,14 @@ class _MatchScreenState extends State<MatchScreen> {
                                         child: Text(
                                           isRegistered()
                                               ? "Already Registered !"
-                                              : widget.mInfo["teams"].length ==
-                                                      int.parse(widget
-                                                          .mInfo["totalSlots"])
-                                                  ? "Registeration Closed !"
+                                              : widget.isReward == false
+                                                  ? widget.mInfo["teams"]
+                                                              .length >=
+                                                          int.parse(
+                                                              widget.mInfo[
+                                                                  "totalSlots"])
+                                                      ? "Registeration Closed !"
+                                                      : "Register Now !"
                                                   : "Register Now !",
                                           style: TextStyle(
                                               color: Colors.white,
@@ -1241,10 +1299,379 @@ class _MatchScreenState extends State<MatchScreen> {
                                         ),
                                         onPressed: isRegistered()
                                             ? null
-                                            : widget.mInfo["teams"].length ==
-                                                    int.parse(widget
-                                                        .mInfo["totalSlots"])
-                                                ? null
+                                            : widget.isReward == false
+                                                ? widget.mInfo["teams"]
+                                                            .length >=
+                                                        int.parse(widget.mInfo[
+                                                            "totalSlots"])
+                                                    ? null
+                                                    : () {
+                                                        if (isBanner) {
+                                                          WidgetsBinding
+                                                              .instance
+                                                              .addPostFrameCallback(
+                                                                  (_) {
+                                                            showModalBottomSheet(
+                                                                context:
+                                                                    context,
+                                                                backgroundColor:
+                                                                    Colors
+                                                                        .transparent,
+                                                                isScrollControlled:
+                                                                    true,
+                                                                builder:
+                                                                    (BuildContext
+                                                                        context) {
+                                                                  return StatefulBuilder(builder:
+                                                                      (BuildContext
+                                                                              context,
+                                                                          setModal) {
+                                                                    return Scaffold(
+                                                                        backgroundColor:
+                                                                            Colors.transparent,
+                                                                        body: StreamBuilder(
+                                                                            stream: registerBloc.matchStream,
+                                                                            builder: (ctx, snap) {
+                                                                              return Container(
+                                                                                  padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 20.w),
+                                                                                  decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.all(Radius.circular(10.h))),
+                                                                                  margin: EdgeInsets.only(
+                                                                                    top: 50.h,
+                                                                                  ),
+                                                                                  child: ListView(shrinkWrap: true, children: <Widget>[
+                                                                                    widget.mInfo["teams"].length >= int.parse(widget.mInfo["totalSlots"])
+                                                                                        ? SizedBox()
+                                                                                        : Padding(
+                                                                                            padding: EdgeInsets.only(top: ScreenUtil().setHeight(30), right: ScreenUtil().setWidth(40), left: ScreenUtil().setWidth(40)),
+                                                                                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                                                                                              Text(
+                                                                                                'Create Team',
+                                                                                                style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                                                                                              ),
+                                                                                              Container(
+                                                                                                  margin: EdgeInsets.only(
+                                                                                                    top: ScreenUtil().setHeight(10),
+                                                                                                  ),
+                                                                                                  alignment: Alignment.center,
+                                                                                                  width: ScreenUtil().setWidth(280),
+                                                                                                  decoration: BoxDecoration(
+                                                                                                    gradient: LinearGradient(colors: [
+                                                                                                      Colors.pink,
+                                                                                                      Colors.deepPurple,
+                                                                                                      Colors.lightBlue
+                                                                                                    ]),
+                                                                                                    borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                                                                                                  ),
+                                                                                                  padding: EdgeInsets.all(2.w),
+                                                                                                  child: Container(
+                                                                                                      decoration: BoxDecoration(
+                                                                                                        borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                                                                                                        color: Colors.black,
+                                                                                                      ),
+                                                                                                      child: Center(
+                                                                                                          child: TextField(
+                                                                                                        controller: teamName,
+                                                                                                        decoration: InputDecoration(
+                                                                                                          focusedBorder: OutlineInputBorder(
+                                                                                                            borderRadius: BorderRadius.circular(30.w),
+                                                                                                          ),
+                                                                                                          border: OutlineInputBorder(
+                                                                                                            borderRadius: BorderRadius.circular(30.w),
+                                                                                                          ),
+                                                                                                          enabledBorder: OutlineInputBorder(
+                                                                                                            borderRadius: BorderRadius.circular(30.w),
+                                                                                                          ),
+                                                                                                          disabledBorder: OutlineInputBorder(
+                                                                                                            borderRadius: BorderRadius.circular(30.w),
+                                                                                                          ),
+                                                                                                          errorBorder: OutlineInputBorder(
+                                                                                                            borderRadius: BorderRadius.circular(30.w),
+                                                                                                          ),
+                                                                                                          focusedErrorBorder: OutlineInputBorder(
+                                                                                                            borderRadius: BorderRadius.circular(30.w),
+                                                                                                          ),
+                                                                                                          contentPadding: EdgeInsets.only(left: 20.w),
+                                                                                                          hintText: "Team Name",
+
+                                                                                                          // fillColor: Colors.transparent[100],
+                                                                                                          focusColor: Colors.grey[400],
+                                                                                                          hintStyle: TextStyle(color: Colors.grey[400]),
+                                                                                                        ),
+                                                                                                        style: TextStyle(color: Colors.white),
+                                                                                                        keyboardType: TextInputType.text,
+                                                                                                      )))),
+                                                                                            ])),
+                                                                                    teamList == [""]
+                                                                                        ? SizedBox()
+                                                                                        : Padding(
+                                                                                            padding: EdgeInsets.only(top: ScreenUtil().setHeight(30), right: ScreenUtil().setWidth(40), left: ScreenUtil().setWidth(40)),
+                                                                                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                                                                                              Text(
+                                                                                                'Join Team',
+                                                                                                style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                                                                                              ),
+                                                                                              Container(
+                                                                                                  margin: EdgeInsets.only(
+                                                                                                    top: ScreenUtil().setHeight(10),
+                                                                                                  ),
+                                                                                                  alignment: Alignment.center,
+                                                                                                  width: ScreenUtil().setWidth(280),
+                                                                                                  decoration: BoxDecoration(
+                                                                                                    gradient: LinearGradient(colors: [
+                                                                                                      Colors.pink,
+                                                                                                      Colors.deepPurple,
+                                                                                                      Colors.lightBlue
+                                                                                                    ]),
+                                                                                                    borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                                                                                                  ),
+                                                                                                  padding: EdgeInsets.all(2.w),
+                                                                                                  child: Container(
+                                                                                                      decoration: BoxDecoration(
+                                                                                                        borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                                                                                                        color: Colors.black,
+                                                                                                      ),
+                                                                                                      padding: EdgeInsets.only(left: 20.w),
+                                                                                                      child: Center(
+                                                                                                          child: DropdownButton<String>(
+                                                                                                        value: dropdownValue,
+                                                                                                        isExpanded: true,
+                                                                                                        elevation: 0,
+                                                                                                        icon: Icon(
+                                                                                                          Icons.arrow_circle_down,
+                                                                                                          color: Colors.black,
+                                                                                                        ),
+                                                                                                        dropdownColor: Colors.pink,
+                                                                                                        style: const TextStyle(color: Colors.white),
+                                                                                                        underline: Container(
+                                                                                                          height: 0,
+                                                                                                          color: Colors.black,
+                                                                                                        ),
+                                                                                                        onChanged: (String newValue) {
+                                                                                                          if (mounted) {
+                                                                                                            setModal(() {
+                                                                                                              dropdownValue = newValue;
+                                                                                                            });
+                                                                                                          }
+                                                                                                        },
+                                                                                                        items: teamList.map<DropdownMenuItem<String>>((String value) {
+                                                                                                          return DropdownMenuItem<String>(
+                                                                                                            value: value,
+                                                                                                            child: Text(
+                                                                                                              value,
+                                                                                                              style: TextStyle(
+                                                                                                                color: Colors.white,
+                                                                                                                fontSize: 16.sp,
+                                                                                                              ),
+                                                                                                            ),
+                                                                                                          );
+                                                                                                        }).toList(),
+                                                                                                      ))))
+                                                                                            ])),
+                                                                                    Padding(
+                                                                                        padding: EdgeInsets.only(top: ScreenUtil().setHeight(30), right: ScreenUtil().setWidth(40), left: ScreenUtil().setWidth(40)),
+                                                                                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                                                                                          Text(
+                                                                                            'Player Name',
+                                                                                            style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                                                                                          ),
+                                                                                          Container(
+                                                                                              margin: EdgeInsets.only(
+                                                                                                top: ScreenUtil().setHeight(10),
+                                                                                              ),
+                                                                                              alignment: Alignment.center,
+                                                                                              width: ScreenUtil().setWidth(280),
+                                                                                              decoration: BoxDecoration(
+                                                                                                gradient: LinearGradient(colors: [
+                                                                                                  Colors.pink,
+                                                                                                  Colors.deepPurple,
+                                                                                                  Colors.lightBlue
+                                                                                                ]),
+                                                                                                borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                                                                                              ),
+                                                                                              padding: EdgeInsets.all(2.w),
+                                                                                              child: Container(
+                                                                                                  decoration: BoxDecoration(
+                                                                                                    borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                                                                                                    color: Colors.black,
+                                                                                                  ),
+                                                                                                  child: Center(
+                                                                                                      child: TextField(
+                                                                                                    controller: playerName,
+                                                                                                    decoration: InputDecoration(
+                                                                                                      focusedBorder: OutlineInputBorder(
+                                                                                                        borderRadius: BorderRadius.circular(30.w),
+                                                                                                      ),
+                                                                                                      border: OutlineInputBorder(
+                                                                                                        borderRadius: BorderRadius.circular(30.w),
+                                                                                                      ),
+                                                                                                      enabledBorder: OutlineInputBorder(
+                                                                                                        borderRadius: BorderRadius.circular(30.w),
+                                                                                                      ),
+                                                                                                      disabledBorder: OutlineInputBorder(
+                                                                                                        borderRadius: BorderRadius.circular(30.w),
+                                                                                                      ),
+                                                                                                      errorBorder: OutlineInputBorder(
+                                                                                                        borderRadius: BorderRadius.circular(30.w),
+                                                                                                      ),
+                                                                                                      focusedErrorBorder: OutlineInputBorder(
+                                                                                                        borderRadius: BorderRadius.circular(30.w),
+                                                                                                      ),
+                                                                                                      contentPadding: EdgeInsets.only(left: 20.w),
+                                                                                                      hintText: "Player Name",
+
+                                                                                                      // fillColor: Colors.transparent[100],
+                                                                                                      focusColor: Colors.grey[400],
+                                                                                                      hintStyle: TextStyle(color: Colors.grey[400]),
+                                                                                                    ),
+                                                                                                    style: TextStyle(color: Colors.white),
+                                                                                                    keyboardType: TextInputType.text,
+                                                                                                  )))),
+                                                                                        ])),
+                                                                                    Container(
+                                                                                      alignment: Alignment.center,
+                                                                                      width: ScreenUtil().setWidth(280),
+                                                                                      padding: EdgeInsets.only(top: ScreenUtil().setHeight(50), right: ScreenUtil().setWidth(40), left: ScreenUtil().setWidth(40)),
+                                                                                      child: Row(
+                                                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                                                        children: <Widget>[
+                                                                                          widget.mInfo["teams"].length >= int.parse(widget.mInfo["totalSlots"])
+                                                                                              ? SizedBox()
+                                                                                              : Container(
+                                                                                                  alignment: Alignment.center,
+                                                                                                  width: ScreenUtil().setWidth(80),
+                                                                                                  decoration: BoxDecoration(
+                                                                                                    borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                                                                                                    color: joinCreate == "create" ? Colors.pink : Colors.black,
+                                                                                                  ),
+                                                                                                  child: Center(
+                                                                                                      child: TextButton(
+                                                                                                          onPressed: () {
+                                                                                                            if (teamName.text.trim() == "" || playerName.text.trim() == "") {
+                                                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Please Fill all the Fields")));
+                                                                                                            } else if (teamList.contains(teamName.text)) {
+                                                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Team Already Exist")));
+                                                                                                            } else {
+                                                                                                              if (mounted) {
+                                                                                                                setModal(() {
+                                                                                                                  joinCreate = 'create';
+                                                                                                                });
+                                                                                                              }
+                                                                                                            }
+                                                                                                          },
+                                                                                                          child: Text(
+                                                                                                            "Create",
+                                                                                                            style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                                                                                                          )))),
+                                                                                          Container(
+                                                                                              alignment: Alignment.center,
+                                                                                              width: ScreenUtil().setWidth(80),
+                                                                                              decoration: BoxDecoration(
+                                                                                                borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                                                                                                color: teamList.length > 1
+                                                                                                    ? joinCreate == "create"
+                                                                                                        ? Colors.pink
+                                                                                                        : Colors.black
+                                                                                                    : Colors.black,
+                                                                                              ),
+                                                                                              child: Center(
+                                                                                                  child: TextButton(
+                                                                                                      onPressed: teamList != [""]
+                                                                                                          ? () {
+                                                                                                              if (dropdownValue == "" || playerName.text.trim() == "") {
+                                                                                                                return ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Please Fill all the Fields")));
+                                                                                                              } else {
+                                                                                                                if (mounted) {
+                                                                                                                  setModal(() {
+                                                                                                                    joinCreate = 'join';
+                                                                                                                  });
+                                                                                                                }
+                                                                                                              }
+                                                                                                            }
+                                                                                                          : null,
+                                                                                                      child: Text(
+                                                                                                        "Join",
+                                                                                                        style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                                                                                                      ))))
+                                                                                        ],
+                                                                                      ),
+                                                                                    ),
+                                                                                    joinCreate == "join" || joinCreate == "create"
+                                                                                        ? Padding(
+                                                                                            padding: EdgeInsets.only(top: ScreenUtil().setHeight(30)),
+                                                                                            child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                                                                                              TextButton(
+                                                                                                  onPressed: () {
+                                                                                                    if (joinCreate == "join") {
+                                                                                                      if (mounted) {
+                                                                                                        setState(() {
+                                                                                                          isLoading = true;
+                                                                                                          regInfo.actions = "register";
+                                                                                                          regInfo.type = "join";
+                                                                                                          regInfo.matchID = widget.matchID; //widget.matchID
+                                                                                                          regInfo.player = playerName.text;
+                                                                                                          regInfo.teamName = dropdownValue;
+                                                                                                          regInfo.matchType = "reward";
+                                                                                                          regInfo.teamID = teamIDs["$dropdownValue"];
+                                                                                                          widget.mInfo["registeredBy"].add(userID);
+
+                                                                                                          //  registerBloc.eventSink.add(regInfo);
+                                                                                                          uInfo.actions = "joinhost";
+                                                                                                          uInfo.type = "join";
+                                                                                                          uInfo.matchID = widget.matchID;
+                                                                                                          //  uBloc.eventSink.add(uInfo);
+                                                                                                          Navigator.of(context).pop();
+                                                                                                          _showDialog();
+                                                                                                        });
+                                                                                                      }
+                                                                                                    } else if (joinCreate == "create") {
+                                                                                                      if (mounted) {
+                                                                                                        setState(() {
+                                                                                                          isLoading = true;
+                                                                                                          regInfo.actions = "register";
+                                                                                                          regInfo.type = "create";
+                                                                                                          regInfo.matchID = widget.matchID; //widget.matchID
+                                                                                                          regInfo.player = playerName.text;
+                                                                                                          regInfo.teamName = teamName.text;
+                                                                                                          regInfo.matchType = "reward";
+                                                                                                          regInfo.teamID = "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
+                                                                                                          widget.mInfo["registeredBy"].add(userID);
+                                                                                                          //  registerBloc.eventSink.add(regInfo);
+                                                                                                          uInfo.actions = "joinhost";
+                                                                                                          uInfo.type = "join";
+                                                                                                          uInfo.matchID = widget.matchID;
+                                                                                                          // uBloc.eventSink.add(uInfo);
+                                                                                                          Navigator.of(context).pop();
+                                                                                                          _showDialog();
+                                                                                                        });
+                                                                                                      }
+                                                                                                    }
+                                                                                                    Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => BannerScreen(regInfo, uInfo)));
+                                                                                                  },
+                                                                                                  child: Text(
+                                                                                                    "Register",
+                                                                                                    style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                                                                                                  ))
+                                                                                            ]))
+                                                                                        : SizedBox(),
+                                                                                    SizedBox(
+                                                                                      height: 20.h,
+                                                                                    ),
+                                                                                  ]));
+                                                                            }));
+                                                                  });
+                                                                });
+                                                          });
+                                                        } else {
+                                                          ScaffoldMessenger.of(
+                                                                  context)
+                                                              .showSnackBar(SnackBar(
+                                                                  backgroundColor:
+                                                                      Colors
+                                                                          .deepPurple,
+                                                                  content: Text(
+                                                                      "Wait for Few seconds ..... Loading")));
+                                                        }
+                                                      }
                                                 : widget.isReward == true
                                                     ? () {
                                                         if (isBanner) {
@@ -1280,66 +1707,68 @@ class _MatchScreenState extends State<MatchScreen> {
                                                                                     top: 50.h,
                                                                                   ),
                                                                                   child: ListView(shrinkWrap: true, children: <Widget>[
-                                                                                    Padding(
-                                                                                        padding: EdgeInsets.only(top: ScreenUtil().setHeight(30), right: ScreenUtil().setWidth(40), left: ScreenUtil().setWidth(40)),
-                                                                                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
-                                                                                          Text(
-                                                                                            'Create Team',
-                                                                                            style: TextStyle(color: Colors.white, fontSize: 16.sp),
-                                                                                          ),
-                                                                                          Container(
-                                                                                              margin: EdgeInsets.only(
-                                                                                                top: ScreenUtil().setHeight(10),
+                                                                                    widget.mInfo["teams"].length >= int.parse(widget.mInfo["totalSlots"])
+                                                                                        ? SizedBox()
+                                                                                        : Padding(
+                                                                                            padding: EdgeInsets.only(top: ScreenUtil().setHeight(30), right: ScreenUtil().setWidth(40), left: ScreenUtil().setWidth(40)),
+                                                                                            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: <Widget>[
+                                                                                              Text(
+                                                                                                'Create Team',
+                                                                                                style: TextStyle(color: Colors.white, fontSize: 16.sp),
                                                                                               ),
-                                                                                              alignment: Alignment.center,
-                                                                                              width: ScreenUtil().setWidth(280),
-                                                                                              decoration: BoxDecoration(
-                                                                                                gradient: LinearGradient(colors: [
-                                                                                                  Colors.pink,
-                                                                                                  Colors.deepPurple,
-                                                                                                  Colors.lightBlue
-                                                                                                ]),
-                                                                                                borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
-                                                                                              ),
-                                                                                              padding: EdgeInsets.all(2.w),
-                                                                                              child: Container(
-                                                                                                  decoration: BoxDecoration(
-                                                                                                    borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
-                                                                                                    color: Colors.black,
+                                                                                              Container(
+                                                                                                  margin: EdgeInsets.only(
+                                                                                                    top: ScreenUtil().setHeight(10),
                                                                                                   ),
-                                                                                                  child: Center(
-                                                                                                      child: TextField(
-                                                                                                    controller: teamName,
-                                                                                                    decoration: InputDecoration(
-                                                                                                      focusedBorder: OutlineInputBorder(
-                                                                                                        borderRadius: BorderRadius.circular(30.w),
+                                                                                                  alignment: Alignment.center,
+                                                                                                  width: ScreenUtil().setWidth(280),
+                                                                                                  decoration: BoxDecoration(
+                                                                                                    gradient: LinearGradient(colors: [
+                                                                                                      Colors.pink,
+                                                                                                      Colors.deepPurple,
+                                                                                                      Colors.lightBlue
+                                                                                                    ]),
+                                                                                                    borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                                                                                                  ),
+                                                                                                  padding: EdgeInsets.all(2.w),
+                                                                                                  child: Container(
+                                                                                                      decoration: BoxDecoration(
+                                                                                                        borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                                                                                                        color: Colors.black,
                                                                                                       ),
-                                                                                                      border: OutlineInputBorder(
-                                                                                                        borderRadius: BorderRadius.circular(30.w),
-                                                                                                      ),
-                                                                                                      enabledBorder: OutlineInputBorder(
-                                                                                                        borderRadius: BorderRadius.circular(30.w),
-                                                                                                      ),
-                                                                                                      disabledBorder: OutlineInputBorder(
-                                                                                                        borderRadius: BorderRadius.circular(30.w),
-                                                                                                      ),
-                                                                                                      errorBorder: OutlineInputBorder(
-                                                                                                        borderRadius: BorderRadius.circular(30.w),
-                                                                                                      ),
-                                                                                                      focusedErrorBorder: OutlineInputBorder(
-                                                                                                        borderRadius: BorderRadius.circular(30.w),
-                                                                                                      ),
-                                                                                                      contentPadding: EdgeInsets.only(left: 20.w),
-                                                                                                      hintText: "Team Name",
+                                                                                                      child: Center(
+                                                                                                          child: TextField(
+                                                                                                        controller: teamName,
+                                                                                                        decoration: InputDecoration(
+                                                                                                          focusedBorder: OutlineInputBorder(
+                                                                                                            borderRadius: BorderRadius.circular(30.w),
+                                                                                                          ),
+                                                                                                          border: OutlineInputBorder(
+                                                                                                            borderRadius: BorderRadius.circular(30.w),
+                                                                                                          ),
+                                                                                                          enabledBorder: OutlineInputBorder(
+                                                                                                            borderRadius: BorderRadius.circular(30.w),
+                                                                                                          ),
+                                                                                                          disabledBorder: OutlineInputBorder(
+                                                                                                            borderRadius: BorderRadius.circular(30.w),
+                                                                                                          ),
+                                                                                                          errorBorder: OutlineInputBorder(
+                                                                                                            borderRadius: BorderRadius.circular(30.w),
+                                                                                                          ),
+                                                                                                          focusedErrorBorder: OutlineInputBorder(
+                                                                                                            borderRadius: BorderRadius.circular(30.w),
+                                                                                                          ),
+                                                                                                          contentPadding: EdgeInsets.only(left: 20.w),
+                                                                                                          hintText: "Team Name",
 
-                                                                                                      // fillColor: Colors.transparent[100],
-                                                                                                      focusColor: Colors.grey[400],
-                                                                                                      hintStyle: TextStyle(color: Colors.grey[400]),
-                                                                                                    ),
-                                                                                                    style: TextStyle(color: Colors.white),
-                                                                                                    keyboardType: TextInputType.text,
-                                                                                                  )))),
-                                                                                        ])),
+                                                                                                          // fillColor: Colors.transparent[100],
+                                                                                                          focusColor: Colors.grey[400],
+                                                                                                          hintStyle: TextStyle(color: Colors.grey[400]),
+                                                                                                        ),
+                                                                                                        style: TextStyle(color: Colors.white),
+                                                                                                        keyboardType: TextInputType.text,
+                                                                                                      )))),
+                                                                                            ])),
                                                                                     teamList == [""]
                                                                                         ? SizedBox()
                                                                                         : Padding(
@@ -1547,32 +1976,34 @@ class _MatchScreenState extends State<MatchScreen> {
                                                                                       child: Row(
                                                                                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                                                                         children: <Widget>[
-                                                                                          Container(
-                                                                                              alignment: Alignment.center,
-                                                                                              width: ScreenUtil().setWidth(80),
-                                                                                              decoration: BoxDecoration(
-                                                                                                borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
-                                                                                                color: joinCreate == "create" ? Colors.pink : Colors.black,
-                                                                                              ),
-                                                                                              child: Center(
-                                                                                                  child: TextButton(
-                                                                                                      onPressed: () {
-                                                                                                        if (teamName.text.trim() == "" || playerName.text.trim() == "") {
-                                                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Please Fill all the Fields")));
-                                                                                                        } else if (teamList.contains(teamName.text)) {
-                                                                                                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Team Already Exist")));
-                                                                                                        } else {
-                                                                                                          if (mounted) {
-                                                                                                            setModal(() {
-                                                                                                              joinCreate = 'create';
-                                                                                                            });
-                                                                                                          }
-                                                                                                        }
-                                                                                                      },
-                                                                                                      child: Text(
-                                                                                                        "Create",
-                                                                                                        style: TextStyle(color: Colors.white, fontSize: 16.sp),
-                                                                                                      )))),
+                                                                                          widget.mInfo["teams"].length >= int.parse(widget.mInfo["totalSlots"])
+                                                                                              ? SizedBox()
+                                                                                              : Container(
+                                                                                                  alignment: Alignment.center,
+                                                                                                  width: ScreenUtil().setWidth(80),
+                                                                                                  decoration: BoxDecoration(
+                                                                                                    borderRadius: BorderRadius.circular(ScreenUtil().setWidth(30)),
+                                                                                                    color: joinCreate == "create" ? Colors.pink : Colors.black,
+                                                                                                  ),
+                                                                                                  child: Center(
+                                                                                                      child: TextButton(
+                                                                                                          onPressed: () {
+                                                                                                            if (teamName.text.trim() == "" || playerName.text.trim() == "") {
+                                                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Please Fill all the Fields")));
+                                                                                                            } else if (teamList.contains(teamName.text)) {
+                                                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Team Already Exist")));
+                                                                                                            } else {
+                                                                                                              if (mounted) {
+                                                                                                                setModal(() {
+                                                                                                                  joinCreate = 'create';
+                                                                                                                });
+                                                                                                              }
+                                                                                                            }
+                                                                                                          },
+                                                                                                          child: Text(
+                                                                                                            "Create",
+                                                                                                            style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                                                                                                          )))),
                                                                                           Container(
                                                                                               alignment: Alignment.center,
                                                                                               width: ScreenUtil().setWidth(80),
@@ -1610,149 +2041,197 @@ class _MatchScreenState extends State<MatchScreen> {
                                                                                         ? Padding(
                                                                                             padding: EdgeInsets.only(top: ScreenUtil().setHeight(30)),
                                                                                             child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
-                                                                                              Text(
-                                                                                                'Tap the ad to register.',
-                                                                                                style: TextStyle(color: Colors.white, fontSize: 16.sp),
-                                                                                              ),
-                                                                                              Container(
-                                                                                                child: AdmobBanner(
-                                                                                                  adUnitId: 'ca-app-pub-7072052726974940/5488771146',
-                                                                                                  adSize: AdmobBannerSize.BANNER,
-                                                                                                  listener: (AdmobAdEvent event, Map<String, dynamic> args) {
-                                                                                                    switch (event) {
-                                                                                                      case AdmobAdEvent.loaded:
-                                                                                                        print('New Admob Ad loaded!');
+                                                                                              TextButton(
+                                                                                                  onPressed: () {
+                                                                                                    if (joinCreate == "join") {
+                                                                                                      if (mounted) {
+                                                                                                        setState(() {
+                                                                                                          isLoading = true;
+                                                                                                          regInfo.actions = "register";
+                                                                                                          regInfo.type = "join";
+                                                                                                          regInfo.matchID = widget.matchID; //widget.matchID
+                                                                                                          regInfo.player = playerName.text;
+                                                                                                          regInfo.teamName = dropdownValue;
+                                                                                                          regInfo.matchType = "reward";
+                                                                                                          regInfo.teamID = teamIDs["$dropdownValue"];
+                                                                                                          widget.mInfo["registeredBy"].add(userID);
 
-                                                                                                        break;
-                                                                                                      case AdmobAdEvent.opened:
-                                                                                                        print('Admob Ad opened!');
-                                                                                                        break;
-                                                                                                      case AdmobAdEvent.closed:
-                                                                                                        print('Admob Ad closed!');
-                                                                                                        break;
-                                                                                                      case AdmobAdEvent.failedToLoad:
-                                                                                                        print('Admob failed to load. :(');
-                                                                                                        break;
-                                                                                                      case AdmobAdEvent.clicked:
-                                                                                                        print('Admob Ad Clicked');
-                                                                                                        if (joinCreate == "join") {
-                                                                                                          if (mounted) {
-                                                                                                            setState(() {
-                                                                                                              isLoading = true;
-                                                                                                              regInfo.actions = "register";
-                                                                                                              regInfo.type = "join";
-                                                                                                              regInfo.matchID = widget.matchID; //widget.matchID
-                                                                                                              regInfo.player = playerName.text;
-                                                                                                              regInfo.teamName = dropdownValue;
-                                                                                                              regInfo.matchType = "reward";
-                                                                                                              regInfo.teamID = teamIDs["$dropdownValue"];
-                                                                                                              widget.mInfo["registeredBy"].add(userID);
-
-                                                                                                              registerBloc.eventSink.add(regInfo);
-                                                                                                              uInfo.actions = "joinhost";
-                                                                                                              uInfo.type = "join";
-                                                                                                              uInfo.matchID = widget.matchID;
-                                                                                                              uBloc.eventSink.add(uInfo);
-                                                                                                              Navigator.of(context).pop();
-                                                                                                              _showDialog();
-                                                                                                            });
-                                                                                                          }
-                                                                                                        } else if (joinCreate == "create") {
-                                                                                                          if (mounted) {
-                                                                                                            setState(() {
-                                                                                                              isLoading = true;
-                                                                                                              regInfo.actions = "register";
-                                                                                                              regInfo.type = "create";
-                                                                                                              regInfo.matchID = widget.matchID; //widget.matchID
-                                                                                                              regInfo.player = playerName.text;
-                                                                                                              regInfo.teamName = teamName.text;
-                                                                                                              regInfo.matchType = "reward";
-                                                                                                              regInfo.teamID = "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
-                                                                                                              widget.mInfo["registeredBy"].add(userID);
-                                                                                                              registerBloc.eventSink.add(regInfo);
-                                                                                                              uInfo.actions = "joinhost";
-                                                                                                              uInfo.type = "join";
-                                                                                                              uInfo.matchID = widget.matchID;
-                                                                                                              uBloc.eventSink.add(uInfo);
-                                                                                                              Navigator.of(context).pop();
-                                                                                                              _showDialog();
-                                                                                                            });
-                                                                                                          }
-                                                                                                        }
-
-                                                                                                        break;
-                                                                                                      case AdmobAdEvent.completed:
-                                                                                                        print('Admob Ad Completed');
-                                                                                                        break;
-                                                                                                      case AdmobAdEvent.impression:
-                                                                                                        print('Admob Ad Impression');
-                                                                                                        break;
-                                                                                                      case AdmobAdEvent.leftApplication:
-                                                                                                        print('Admob Ad Left Application');
-                                                                                                        if (joinCreate == "join") {
-                                                                                                          if (mounted) {
-                                                                                                            setState(() {
-                                                                                                              isLoading = true;
-                                                                                                              regInfo.actions = "register";
-                                                                                                              regInfo.type = "join";
-                                                                                                              regInfo.matchID = widget.matchID; //widget.matchID
-                                                                                                              regInfo.player = playerName.text;
-                                                                                                              regInfo.teamName = dropdownValue;
-                                                                                                              regInfo.matchType = "reward";
-                                                                                                              regInfo.teamID = teamIDs["$dropdownValue"];
-                                                                                                              widget.mInfo["registeredBy"].add(userID);
-
-                                                                                                              registerBloc.eventSink.add(regInfo);
-                                                                                                              uInfo.actions = "joinhost";
-                                                                                                              uInfo.type = "join";
-                                                                                                              uInfo.matchID = widget.matchID;
-                                                                                                              uBloc.eventSink.add(uInfo);
-                                                                                                              Navigator.of(context).pop();
-                                                                                                              _showDialog();
-                                                                                                            });
-                                                                                                          }
-                                                                                                        } else if (joinCreate == "create") {
-                                                                                                          if (mounted) {
-                                                                                                            setState(() {
-                                                                                                              isLoading = true;
-                                                                                                              regInfo.actions = "register";
-                                                                                                              regInfo.type = "create";
-                                                                                                              regInfo.matchID = widget.matchID; //widget.matchID
-                                                                                                              regInfo.player = playerName.text;
-                                                                                                              regInfo.teamName = teamName.text;
-                                                                                                              regInfo.matchType = "reward";
-                                                                                                              regInfo.teamID = "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
-                                                                                                              widget.mInfo["registeredBy"].add(userID);
-                                                                                                              registerBloc.eventSink.add(regInfo);
-                                                                                                              uInfo.actions = "joinhost";
-                                                                                                              uInfo.type = "join";
-                                                                                                              uInfo.matchID = widget.matchID;
-                                                                                                              uBloc.eventSink.add(uInfo);
-                                                                                                              Navigator.of(context).pop();
-                                                                                                              _showDialog();
-                                                                                                            });
-                                                                                                          }
-                                                                                                        }
-
-                                                                                                        break;
-                                                                                                      case AdmobAdEvent.started:
-                                                                                                        print('Admob Ad Started');
-                                                                                                        break;
-                                                                                                      case AdmobAdEvent.rewarded:
-                                                                                                        print('Admob Ad Rewarded');
-                                                                                                        break;
-                                                                                                      default:
-                                                                                                        print("ggg");
+                                                                                                          //  registerBloc.eventSink.add(regInfo);
+                                                                                                          uInfo.actions = "joinhost";
+                                                                                                          uInfo.type = "join";
+                                                                                                          uInfo.matchID = widget.matchID;
+                                                                                                          //  uBloc.eventSink.add(uInfo);
+                                                                                                          Navigator.of(context).pop();
+                                                                                                          _showDialog();
+                                                                                                        });
+                                                                                                      }
+                                                                                                    } else if (joinCreate == "create") {
+                                                                                                      if (mounted) {
+                                                                                                        setState(() {
+                                                                                                          isLoading = true;
+                                                                                                          regInfo.actions = "register";
+                                                                                                          regInfo.type = "create";
+                                                                                                          regInfo.matchID = widget.matchID; //widget.matchID
+                                                                                                          regInfo.player = playerName.text;
+                                                                                                          regInfo.teamName = teamName.text;
+                                                                                                          regInfo.matchType = "reward";
+                                                                                                          regInfo.teamID = "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
+                                                                                                          widget.mInfo["registeredBy"].add(userID);
+                                                                                                          //  registerBloc.eventSink.add(regInfo);
+                                                                                                          uInfo.actions = "joinhost";
+                                                                                                          uInfo.type = "join";
+                                                                                                          uInfo.matchID = widget.matchID;
+                                                                                                          // uBloc.eventSink.add(uInfo);
+                                                                                                          Navigator.of(context).pop();
+                                                                                                          _showDialog();
+                                                                                                        });
+                                                                                                      }
                                                                                                     }
+                                                                                                    Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => BannerScreen(regInfo, uInfo)));
                                                                                                   },
-                                                                                                  onBannerCreated: (AdmobBannerController controller) {
-                                                                                                    // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
-                                                                                                    // Normally you don't need to worry about disposing this yourself, it's handled.
-                                                                                                    // If you need direct access to dispose, this is your guy!
-                                                                                                    // controller.dispose();
-                                                                                                  },
-                                                                                                ),
-                                                                                              )
+                                                                                                  child: Text(
+                                                                                                    "Register",
+                                                                                                    style: TextStyle(color: Colors.white, fontSize: 16.sp),
+                                                                                                  ))
+                                                                                              // Container(child: bannerAd
+                                                                                              //  AdmobBanner(
+                                                                                              //   adUnitId: 'ca-app-pub-7072052726974940/5488771146',
+                                                                                              //   adSize: AdmobBannerSize.BANNER,
+                                                                                              //   listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+                                                                                              //     switch (event) {
+                                                                                              //       case AdmobAdEvent.loaded:
+                                                                                              //         print('New Admob Ad loaded!');
+
+                                                                                              //         break;
+                                                                                              //       case AdmobAdEvent.opened:
+                                                                                              //         print('Admob Ad opened!');
+                                                                                              //         break;
+                                                                                              //       case AdmobAdEvent.closed:
+                                                                                              //         print('Admob Ad closed!');
+                                                                                              //         break;
+                                                                                              //       case AdmobAdEvent.failedToLoad:
+                                                                                              //         print('Admob failed to load. :(');
+                                                                                              //         break;
+                                                                                              //       case AdmobAdEvent.clicked:
+                                                                                              //         print('Admob Ad Clicked');
+                                                                                              //         if (joinCreate == "join") {
+                                                                                              //           if (mounted) {
+                                                                                              //             setState(() {
+                                                                                              //               isLoading = true;
+                                                                                              //               regInfo.actions = "register";
+                                                                                              //               regInfo.type = "join";
+                                                                                              //               regInfo.matchID = widget.matchID; //widget.matchID
+                                                                                              //               regInfo.player = playerName.text;
+                                                                                              //               regInfo.teamName = dropdownValue;
+                                                                                              //               regInfo.matchType = "reward";
+                                                                                              //               regInfo.teamID = teamIDs["$dropdownValue"];
+                                                                                              //               widget.mInfo["registeredBy"].add(userID);
+
+                                                                                              //               registerBloc.eventSink.add(regInfo);
+                                                                                              //               uInfo.actions = "joinhost";
+                                                                                              //               uInfo.type = "join";
+                                                                                              //               uInfo.matchID = widget.matchID;
+                                                                                              //               uBloc.eventSink.add(uInfo);
+                                                                                              //               Navigator.of(context).pop();
+                                                                                              //               _showDialog();
+                                                                                              //             });
+                                                                                              //           }
+                                                                                              //         } else if (joinCreate == "create") {
+                                                                                              //           if (mounted) {
+                                                                                              //             setState(() {
+                                                                                              //               isLoading = true;
+                                                                                              //               regInfo.actions = "register";
+                                                                                              //               regInfo.type = "create";
+                                                                                              //               regInfo.matchID = widget.matchID; //widget.matchID
+                                                                                              //               regInfo.player = playerName.text;
+                                                                                              //               regInfo.teamName = teamName.text;
+                                                                                              //               regInfo.matchType = "reward";
+                                                                                              //               regInfo.teamID = "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
+                                                                                              //               widget.mInfo["registeredBy"].add(userID);
+                                                                                              //               registerBloc.eventSink.add(regInfo);
+                                                                                              //               uInfo.actions = "joinhost";
+                                                                                              //               uInfo.type = "join";
+                                                                                              //               uInfo.matchID = widget.matchID;
+                                                                                              //               uBloc.eventSink.add(uInfo);
+                                                                                              //               Navigator.of(context).pop();
+                                                                                              //               _showDialog();
+                                                                                              //             });
+                                                                                              //           }
+                                                                                              //         }
+
+                                                                                              //         break;
+                                                                                              //       case AdmobAdEvent.completed:
+                                                                                              //         print('Admob Ad Completed');
+                                                                                              //         break;
+                                                                                              //       case AdmobAdEvent.impression:
+                                                                                              //         print('Admob Ad Impression');
+                                                                                              //         break;
+                                                                                              //       case AdmobAdEvent.leftApplication:
+                                                                                              //         print('Admob Ad Left Application');
+                                                                                              //         if (joinCreate == "join") {
+                                                                                              //           if (mounted) {
+                                                                                              //             setState(() {
+                                                                                              //               isLoading = true;
+                                                                                              //               regInfo.actions = "register";
+                                                                                              //               regInfo.type = "join";
+                                                                                              //               regInfo.matchID = widget.matchID; //widget.matchID
+                                                                                              //               regInfo.player = playerName.text;
+                                                                                              //               regInfo.teamName = dropdownValue;
+                                                                                              //               regInfo.matchType = "reward";
+                                                                                              //               regInfo.teamID = teamIDs["$dropdownValue"];
+                                                                                              //               widget.mInfo["registeredBy"].add(userID);
+
+                                                                                              //               registerBloc.eventSink.add(regInfo);
+                                                                                              //               uInfo.actions = "joinhost";
+                                                                                              //               uInfo.type = "join";
+                                                                                              //               uInfo.matchID = widget.matchID;
+                                                                                              //               uBloc.eventSink.add(uInfo);
+                                                                                              //               Navigator.of(context).pop();
+                                                                                              //               _showDialog();
+                                                                                              //             });
+                                                                                              //           }
+                                                                                              //         } else if (joinCreate == "create") {
+                                                                                              //           if (mounted) {
+                                                                                              //             setState(() {
+                                                                                              //               isLoading = true;
+                                                                                              //               regInfo.actions = "register";
+                                                                                              //               regInfo.type = "create";
+                                                                                              //               regInfo.matchID = widget.matchID; //widget.matchID
+                                                                                              //               regInfo.player = playerName.text;
+                                                                                              //               regInfo.teamName = teamName.text;
+                                                                                              //               regInfo.matchType = "reward";
+                                                                                              //               regInfo.teamID = "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
+                                                                                              //               widget.mInfo["registeredBy"].add(userID);
+                                                                                              //               registerBloc.eventSink.add(regInfo);
+                                                                                              //               uInfo.actions = "joinhost";
+                                                                                              //               uInfo.type = "join";
+                                                                                              //               uInfo.matchID = widget.matchID;
+                                                                                              //               uBloc.eventSink.add(uInfo);
+                                                                                              //               Navigator.of(context).pop();
+                                                                                              //               _showDialog();
+                                                                                              //             });
+                                                                                              //           }
+                                                                                              //         }
+
+                                                                                              //         break;
+                                                                                              //       case AdmobAdEvent.started:
+                                                                                              //         print('Admob Ad Started');
+                                                                                              //         break;
+                                                                                              //       case AdmobAdEvent.rewarded:
+                                                                                              //         print('Admob Ad Rewarded');
+                                                                                              //         break;
+                                                                                              //       default:
+                                                                                              //         print("ggg");
+                                                                                              //     }
+                                                                                              //   },
+                                                                                              //   onBannerCreated: (AdmobBannerController controller) {
+                                                                                              //     // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+                                                                                              //     // Normally you don't need to worry about disposing this yourself, it's handled.
+                                                                                              //     // If you need direct access to dispose, this is your guy!
+                                                                                              //     // controller.dispose();
+                                                                                              //   },
+                                                                                              // ),
+                                                                                              //       )
                                                                                             ]))
                                                                                         : SizedBox(),
                                                                                     SizedBox(
@@ -1968,131 +2447,131 @@ class _MatchScreenState extends State<MatchScreen> {
                                                                                       }
                                                                                     },
                                                                                   ))),
-                                                                              Container(
-                                                                                child: AdmobBanner(
-                                                                                  adUnitId: 'ca-app-pub-7072052726974940/5488771146',
-                                                                                  adSize: AdmobBannerSize.BANNER,
-                                                                                  listener: (AdmobAdEvent event, Map<String, dynamic> args) {
-                                                                                    switch (event) {
-                                                                                      case AdmobAdEvent.loaded:
-                                                                                        print('New Admob Ad loaded!');
+                                                                              Container(child: bannerAd
+                                                                                  // AdmobBanner(
+                                                                                  //   adUnitId: 'ca-app-pub-7072052726974940/5488771146',
+                                                                                  //   adSize: AdmobBannerSize.BANNER,
+                                                                                  //   listener: (AdmobAdEvent event, Map<String, dynamic> args) {
+                                                                                  //     switch (event) {
+                                                                                  //       case AdmobAdEvent.loaded:
+                                                                                  //         print('New Admob Ad loaded!');
 
-                                                                                        break;
-                                                                                      case AdmobAdEvent.opened:
-                                                                                        print('Admob Ad opened!');
-                                                                                        break;
-                                                                                      case AdmobAdEvent.closed:
-                                                                                        print('Admob Ad closed!');
-                                                                                        break;
-                                                                                      case AdmobAdEvent.failedToLoad:
-                                                                                        print('Admob failed to load. :(');
-                                                                                        break;
-                                                                                      case AdmobAdEvent.clicked:
-                                                                                        print('Admob Ad Clicked');
-                                                                                        if (mounted) {
-                                                                                          setState(() {
-                                                                                            if (teamName.text.trim() == "") {
-                                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Team Name is required")));
-                                                                                            } else {
-                                                                                              isLoading = true;
-                                                                                              regInfo.actions = "register";
-                                                                                              regInfo.type = "create";
-                                                                                              regInfo.matchID = widget.matchID;
+                                                                                  //         break;
+                                                                                  //       case AdmobAdEvent.opened:
+                                                                                  //         print('Admob Ad opened!');
+                                                                                  //         break;
+                                                                                  //       case AdmobAdEvent.closed:
+                                                                                  //         print('Admob Ad closed!');
+                                                                                  //         break;
+                                                                                  //       case AdmobAdEvent.failedToLoad:
+                                                                                  //         print('Admob failed to load. :(');
+                                                                                  //         break;
+                                                                                  //       case AdmobAdEvent.clicked:
+                                                                                  //         print('Admob Ad Clicked');
+                                                                                  //         if (mounted) {
+                                                                                  //           setState(() {
+                                                                                  //             if (teamName.text.trim() == "") {
+                                                                                  //               ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Team Name is required")));
+                                                                                  //             } else {
+                                                                                  //               isLoading = true;
+                                                                                  //               regInfo.actions = "register";
+                                                                                  //               regInfo.type = "create";
+                                                                                  //               regInfo.matchID = widget.matchID;
 
-                                                                                              regInfo.player = playerName.text;
-                                                                                              regInfo.teamName = teamName.text;
-                                                                                              regInfo.matchType = "daily";
-                                                                                              regInfo.teamID = "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
+                                                                                  //               regInfo.player = playerName.text;
+                                                                                  //               regInfo.teamName = teamName.text;
+                                                                                  //               regInfo.matchType = "daily";
+                                                                                  //               regInfo.teamID = "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
 
-                                                                                              widget.mInfo["registeredBy"].add(userID);
-                                                                                              if (widget.mInfo["entryFee"] == null || widget.mInfo["entryFee"] == "0" || widget.mInfo["entryFee"] == "null") {
-                                                                                                registerBloc.eventSink.add(regInfo);
-                                                                                                uInfo.actions = "joinhost";
-                                                                                                uInfo.type = "join";
-                                                                                                uInfo.matchID = widget.matchID;
-                                                                                                uBloc.eventSink.add(uInfo);
-                                                                                                Navigator.of(context).pop();
-                                                                                                _showDialog();
-                                                                                              } else {
-                                                                                                Navigator.of(context).pop();
-                                                                                                showModalBottomSheet(
-                                                                                                    context: context,
-                                                                                                    backgroundColor: Colors.transparent,
-                                                                                                    isScrollControlled: true,
-                                                                                                    builder: (BuildContext context) {
-                                                                                                      _showDialog();
-                                                                                                      return Payment('${widget.mInfo["entryFee"]}', regInfo);
-                                                                                                    });
-                                                                                              }
-                                                                                            }
-                                                                                          });
-                                                                                        }
-                                                                                        break;
-                                                                                      case AdmobAdEvent.completed:
-                                                                                        print('Admob Ad Completed');
-                                                                                        break;
-                                                                                      case AdmobAdEvent.impression:
-                                                                                        print('Admob Ad Impression');
-                                                                                        break;
-                                                                                      case AdmobAdEvent.leftApplication:
-                                                                                        print('Admob Ad Left Application');
-                                                                                        if (mounted) {
-                                                                                          setState(() {
-                                                                                            if (teamName.text.trim() == "") {
-                                                                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Team Name is required")));
-                                                                                            } else {
-                                                                                              isLoading = true;
-                                                                                              regInfo.actions = "register";
-                                                                                              regInfo.type = "create";
-                                                                                              regInfo.matchID = widget.matchID;
+                                                                                  //               widget.mInfo["registeredBy"].add(userID);
+                                                                                  //               if (widget.mInfo["entryFee"] == null || widget.mInfo["entryFee"] == "0" || widget.mInfo["entryFee"] == "null") {
+                                                                                  //                 registerBloc.eventSink.add(regInfo);
+                                                                                  //                 uInfo.actions = "joinhost";
+                                                                                  //                 uInfo.type = "join";
+                                                                                  //                 uInfo.matchID = widget.matchID;
+                                                                                  //                 uBloc.eventSink.add(uInfo);
+                                                                                  //                 Navigator.of(context).pop();
+                                                                                  //                 _showDialog();
+                                                                                  //               } else {
+                                                                                  //                 Navigator.of(context).pop();
+                                                                                  //                 showModalBottomSheet(
+                                                                                  //                     context: context,
+                                                                                  //                     backgroundColor: Colors.transparent,
+                                                                                  //                     isScrollControlled: true,
+                                                                                  //                     builder: (BuildContext context) {
+                                                                                  //                       _showDialog();
+                                                                                  //                       return Payment('${widget.mInfo["entryFee"]}', regInfo);
+                                                                                  //                     });
+                                                                                  //               }
+                                                                                  //             }
+                                                                                  //           });
+                                                                                  //         }
+                                                                                  //         break;
+                                                                                  //       case AdmobAdEvent.completed:
+                                                                                  //         print('Admob Ad Completed');
+                                                                                  //         break;
+                                                                                  //       case AdmobAdEvent.impression:
+                                                                                  //         print('Admob Ad Impression');
+                                                                                  //         break;
+                                                                                  //       case AdmobAdEvent.leftApplication:
+                                                                                  //         print('Admob Ad Left Application');
+                                                                                  //         if (mounted) {
+                                                                                  //           setState(() {
+                                                                                  //             if (teamName.text.trim() == "") {
+                                                                                  //               ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: Colors.deepPurple, content: Text("Team Name is required")));
+                                                                                  //             } else {
+                                                                                  //               isLoading = true;
+                                                                                  //               regInfo.actions = "register";
+                                                                                  //               regInfo.type = "create";
+                                                                                  //               regInfo.matchID = widget.matchID;
 
-                                                                                              regInfo.player = playerName.text;
-                                                                                              regInfo.teamName = teamName.text;
-                                                                                              regInfo.matchType = "daily";
-                                                                                              regInfo.teamID = "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
+                                                                                  //               regInfo.player = playerName.text;
+                                                                                  //               regInfo.teamName = teamName.text;
+                                                                                  //               regInfo.matchType = "daily";
+                                                                                  //               regInfo.teamID = "${regInfo.teamName}${DateTime.now()}${regInfo.matchID}";
 
-                                                                                              widget.mInfo["registeredBy"].add(userID);
-                                                                                              if (widget.mInfo["entryFee"] == null || widget.mInfo["entryFee"] == "0" || widget.mInfo["entryFee"] == "null") {
-                                                                                                registerBloc.eventSink.add(regInfo);
-                                                                                                uInfo.actions = "joinhost";
-                                                                                                uInfo.type = "join";
-                                                                                                uInfo.matchID = widget.matchID;
-                                                                                                uBloc.eventSink.add(uInfo);
-                                                                                                Navigator.of(context).pop();
-                                                                                                _showDialog();
-                                                                                              } else {
-                                                                                                Navigator.of(context).pop();
-                                                                                                showModalBottomSheet(
-                                                                                                    context: context,
-                                                                                                    backgroundColor: Colors.transparent,
-                                                                                                    isScrollControlled: true,
-                                                                                                    builder: (BuildContext context) {
-                                                                                                      _showDialog();
-                                                                                                      return Payment('${widget.mInfo["entryFee"]}', regInfo);
-                                                                                                    });
-                                                                                              }
-                                                                                            }
-                                                                                          });
-                                                                                        }
-                                                                                        break;
-                                                                                      case AdmobAdEvent.started:
-                                                                                        print('Admob Ad Started');
-                                                                                        break;
-                                                                                      case AdmobAdEvent.rewarded:
-                                                                                        print('Admob Ad Rewarded');
-                                                                                        break;
-                                                                                      default:
-                                                                                        print("ggg");
-                                                                                    }
-                                                                                  },
-                                                                                  onBannerCreated: (AdmobBannerController controller) {
-                                                                                    // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
-                                                                                    // Normally you don't need to worry about disposing this yourself, it's handled.
-                                                                                    // If you need direct access to dispose, this is your guy!
-                                                                                    // controller.dispose();
-                                                                                  },
-                                                                                ),
-                                                                              ),
+                                                                                  //               widget.mInfo["registeredBy"].add(userID);
+                                                                                  //               if (widget.mInfo["entryFee"] == null || widget.mInfo["entryFee"] == "0" || widget.mInfo["entryFee"] == "null") {
+                                                                                  //                 registerBloc.eventSink.add(regInfo);
+                                                                                  //                 uInfo.actions = "joinhost";
+                                                                                  //                 uInfo.type = "join";
+                                                                                  //                 uInfo.matchID = widget.matchID;
+                                                                                  //                 uBloc.eventSink.add(uInfo);
+                                                                                  //                 Navigator.of(context).pop();
+                                                                                  //                 _showDialog();
+                                                                                  //               } else {
+                                                                                  //                 Navigator.of(context).pop();
+                                                                                  //                 showModalBottomSheet(
+                                                                                  //                     context: context,
+                                                                                  //                     backgroundColor: Colors.transparent,
+                                                                                  //                     isScrollControlled: true,
+                                                                                  //                     builder: (BuildContext context) {
+                                                                                  //                       _showDialog();
+                                                                                  //                       return Payment('${widget.mInfo["entryFee"]}', regInfo);
+                                                                                  //                     });
+                                                                                  //               }
+                                                                                  //             }
+                                                                                  //           });
+                                                                                  //         }
+                                                                                  //         break;
+                                                                                  //       case AdmobAdEvent.started:
+                                                                                  //         print('Admob Ad Started');
+                                                                                  //         break;
+                                                                                  //       case AdmobAdEvent.rewarded:
+                                                                                  //         print('Admob Ad Rewarded');
+                                                                                  //         break;
+                                                                                  //       default:
+                                                                                  //         print("ggg");
+                                                                                  //     }
+                                                                                  //   },
+                                                                                  //   onBannerCreated: (AdmobBannerController controller) {
+                                                                                  //     // Dispose is called automatically for you when Flutter removes the banner from the widget tree.
+                                                                                  //     // Normally you don't need to worry about disposing this yourself, it's handled.
+                                                                                  //     // If you need direct access to dispose, this is your guy!
+                                                                                  //     // controller.dispose();
+                                                                                  //   },
+                                                                                  // ),
+                                                                                  ),
                                                                             ],
                                                                           ),
                                                                         );

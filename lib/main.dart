@@ -1,4 +1,4 @@
-import 'package:admob_flutter/admob_flutter.dart';
+//import 'package:admob_flutter/admob_flutter.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:rosterz/screens/auth_screen.dart';
 import 'package:rosterz/screens/allmatch_screen.dart';
+import 'package:rosterz/screens/banner_screen.dart';
 import 'package:rosterz/screens/feedback_screen.dart';
 import 'package:rosterz/screens/game_screen.dart';
 import 'package:rosterz/screens/home_screen.dart';
@@ -28,7 +29,7 @@ int notificationCount = 0;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  Admob.initialize();
+  // Admob.initialize();
   runApp(MyApp());
 }
 
@@ -64,6 +65,7 @@ class MyApp extends StatelessWidget {
                     SplashScreen.routeName: (context) => SplashScreen(),
                     PaymentScreen.routeName: (context) => PaymentScreen(),
                     FeedBackScreen.routeName: (context) => FeedBackScreen(),
+                    BannerScreen.routeName: (context) => BannerScreen("", ""),
                   });
             }));
   }

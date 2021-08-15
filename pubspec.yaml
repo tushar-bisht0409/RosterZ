@@ -31,7 +31,8 @@ dependencies:
   razorpay_flutter:
   shared_preferences:
   firebase_analytics:
-  admob_flutter:
+  #admob_flutter:
+  facebook_audience_network:
 
 
 
