@@ -31,6 +31,18 @@ class UserBloc {
               await dio.get(serverURl + '/fcmtokenlist', queryParameters: {
             "userIDs": event.userIDs,
           });
+        } else if (event.actions == "updateinfo") {
+          response = await dio.post(serverURl + '/updateinfo',
+              data: jsonEncode({
+                "type": event.type,
+                "userID": event.userID,
+                "newinfo": event.newinfo,
+                "starType": event.starType,
+                "senderID": event.senderID,
+                "receiverID": event.receiverID,
+                "team": event.team,
+                "teamAction": event.teamAction,
+              }));
         } else if (event.actions == "joinhost") {
           response = await dio.post(serverURl + '/usermatch',
               data: jsonEncode({
@@ -44,6 +56,13 @@ class UserBloc {
                 "feedback": event.feedback,
                 "userID": userID,
                 "timeStamp": DateTime.now().toString(),
+              }));
+        } else if (event.actions == "updatecoins") {
+          response = await dio.post(serverURl + '/updatecoins',
+              data: jsonEncode({
+                "type": "subtract",
+                "userID": userID,
+                "coinAmount": event.coinAmount,
               }));
         }
       } on Error catch (e) {

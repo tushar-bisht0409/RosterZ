@@ -31,8 +31,11 @@ dependencies:
   razorpay_flutter:
   shared_preferences:
   firebase_analytics:
-  #admob_flutter:
-  facebook_audience_network:
+  admob_flutter:
+  font_awesome_flutter:
+  url_launcher:
+  flutter_tapjoy:
+  #facebook_audience_network:
 
 
 
@@ -64,7 +67,11 @@ flutter:
     - assets/images/FREEFIRE.png
     - assets/images/Background.png
     - assets/images/Skull.png
+    - assets/images/Flames.png
     - assets/images/Logo.png
+    - assets/images/Logo_BGno.png
+    - assets/images/RC.png
+    - assets/images/Ztoken.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

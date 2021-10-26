@@ -8,7 +8,8 @@ import 'package:rosterz/models/user_info.dart';
 class Payment extends StatefulWidget {
   var entryFee;
   var regInfo;
-  Payment(this.entryFee, this.regInfo);
+  bool premium;
+  Payment(this.entryFee, this.regInfo, this.premium);
   @override
   _PaymentState createState() => _PaymentState();
 }
@@ -27,13 +28,14 @@ class _PaymentState extends State<Payment> {
   }
 
   void paySuccess(PaymentSuccessResponse response) {
-    print('yoooo');
-    registerBloc.eventSink.add(widget.regInfo);
-    uInfo.actions = "joinhost";
-    uInfo.type = "join";
-    uInfo.matchID = widget.regInfo.matchID;
-    uBloc.eventSink.add(uInfo);
-    print(response.paymentId.toString());
+    if (widget.premium == true) {
+    } else {
+      registerBloc.eventSink.add(widget.regInfo);
+      uInfo.actions = "joinhost";
+      uInfo.type = "join";
+      uInfo.matchID = widget.regInfo.matchID;
+      uBloc.eventSink.add(uInfo);
+    }
   }
 
   void payError(PaymentFailureResponse response) {
@@ -45,9 +47,10 @@ class _PaymentState extends State<Payment> {
   }
 
   getPayment() {
+    double mny = double.parse(widget.entryFee) * 100;
     var options = {
       'key': 'rzp_live_VKEA5IwmvM3Zxo',
-      'amount': double.parse(widget.entryFee) * 100,
+      'amount': mny,
       'name': 'SpiritZee',
     };
     try {

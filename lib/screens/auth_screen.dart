@@ -37,19 +37,19 @@ class _AuthScreenState extends State<AuthScreen> {
     });
   }
 
-  void showCode() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        setState(() {
-          if (phoneNo.text.length > 0)
-            countryCode = "+91";
-          else {
-            countryCode = "";
-          }
-        });
-      }
-    });
-  }
+  // void showCode() {
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     if (mounted) {
+  //       setState(() {
+  //         if (phoneNo.text.length > 0)
+  //           countryCode = "+91";
+  //         else {
+  //           countryCode = "";
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
 
   void submmit() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -58,8 +58,8 @@ class _AuthScreenState extends State<AuthScreen> {
           _isLoading = true;
           userInfo.phone = phoneNo.text;
           userInfo.password = password.text;
-          if (phoneNo.text.length != 10) {
-            return snackBar("Type a valid Phone number.");
+          if (phoneNo.text.contains("@") == false) {
+            return snackBar("Type a valid Email.");
           } else if (authMode == AuthMode.Signup &&
               confirmPassword.text != password.text) {
             confirmPassword.text = "";
@@ -81,8 +81,11 @@ class _AuthScreenState extends State<AuthScreen> {
       });
     }
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(str),
-      backgroundColor: Colors.deepPurple,
+      content: Text(
+        str,
+        style: TextStyle(color: Colors.black),
+      ),
+      backgroundColor: Colors.greenAccent,
     ));
   }
 
@@ -135,11 +138,13 @@ class _AuthScreenState extends State<AuthScreen> {
                 width: 360.w,
                 alignment: Alignment.topCenter,
                 child: Container(
-                  height: 300.h,
+                  height: 690.h,
                   width: 360.h,
                   child: Image.asset(
-                    "assets/images/Skull.png",
+                    "assets/images/Flames.png",
                     fit: BoxFit.cover,
+                    color: Colors.black.withOpacity(0.8),
+                    colorBlendMode: BlendMode.darken,
                   ),
                 ),
               ),
@@ -157,9 +162,19 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                 child: ListView(
                   children: <Widget>[
+                    Container(
+                      height: 300.h,
+                      margin: EdgeInsets.only(top: 0.h),
+                      width: 360.w,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: AssetImage('assets/images/Logo_BGno.png'),
+                              fit: BoxFit.fitHeight)),
+                      alignment: Alignment.center,
+                    ),
                     Padding(
                         padding: EdgeInsets.only(
-                            top: ScreenUtil().setHeight(320),
+                            top: ScreenUtil().setHeight(40),
                             right: ScreenUtil().setWidth(40),
                             left: ScreenUtil().setWidth(40)),
                         child: Container(
@@ -167,9 +182,9 @@ class _AuthScreenState extends State<AuthScreen> {
                             width: ScreenUtil().setWidth(280),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(colors: [
-                                Colors.pink,
-                                Colors.deepPurple,
-                                Colors.lightBlue
+                                Colors.lightBlue,
+                                Colors.green,
+                                Colors.blue[700]
                               ]),
                               borderRadius: BorderRadius.circular(
                                   ScreenUtil().setWidth(30)),
@@ -184,9 +199,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                 child: Center(
                                     child: TextField(
                                   controller: phoneNo,
-                                  onChanged: (value) {
-                                    showCode();
-                                  },
+                                  // onChanged: (value) {
+                                  //   showCode();
+                                  // },
                                   decoration: InputDecoration(
                                     prefix: Text(
                                       countryCode,
@@ -211,14 +226,14 @@ class _AuthScreenState extends State<AuthScreen> {
                                       borderRadius: BorderRadius.circular(30.w),
                                     ),
                                     contentPadding: EdgeInsets.only(left: 20.w),
-                                    hintText: "Phone No.",
+                                    hintText: "Email",
                                     // fillColor: Colors.transparent[100],
                                     focusColor: Colors.grey[400],
                                     hintStyle:
                                         TextStyle(color: Colors.grey[400]),
                                   ),
                                   style: TextStyle(color: Colors.white),
-                                  keyboardType: TextInputType.number,
+                                  keyboardType: TextInputType.text,
                                 ))))),
                     Padding(
                         padding: EdgeInsets.only(
@@ -230,9 +245,9 @@ class _AuthScreenState extends State<AuthScreen> {
                             width: ScreenUtil().setWidth(280),
                             decoration: BoxDecoration(
                               gradient: LinearGradient(colors: [
-                                Colors.pink,
-                                Colors.deepPurple,
-                                Colors.lightBlue
+                                Colors.lightBlue,
+                                Colors.green,
+                                Colors.blue[700]
                               ]),
                               borderRadius: BorderRadius.circular(
                                   ScreenUtil().setWidth(30)),
@@ -290,9 +305,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                 width: ScreenUtil().setWidth(280),
                                 decoration: BoxDecoration(
                                   gradient: LinearGradient(colors: [
-                                    Colors.pink,
-                                    Colors.deepPurple,
-                                    Colors.lightBlue
+                                    Colors.lightBlue,
+                                    Colors.green,
+                                    Colors.blue[700]
                                   ]),
                                   borderRadius: BorderRadius.circular(
                                       ScreenUtil().setWidth(30)),
@@ -384,7 +399,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(
                                           ScreenUtil().setWidth(30)),
-                                      color: Colors.pink,
+                                      color: Colors.greenAccent,
                                     ),
                                     child: Center(
                                         child: TextButton(
@@ -393,7 +408,7 @@ class _AuthScreenState extends State<AuthScreen> {
                                             ? "SIGN UP"
                                             : "LOG IN",
                                         style: TextStyle(
-                                            color: Colors.white,
+                                            color: Colors.black,
                                             fontSize: 14.sp),
                                       ),
                                       onPressed: submmit,
@@ -408,9 +423,9 @@ class _AuthScreenState extends State<AuthScreen> {
                                     width: 100.sp,
                                     decoration: BoxDecoration(
                                       gradient: LinearGradient(colors: [
-                                        Colors.pink,
-                                        Colors.deepPurple,
-                                        Colors.lightBlue
+                                        Colors.lightBlue,
+                                        Colors.green,
+                                        Colors.blue[700]
                                       ]),
                                       borderRadius: BorderRadius.circular(
                                           ScreenUtil().setWidth(30)),

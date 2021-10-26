@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "705501133616",
-    "project_id": "rosterz-79d6d",
-    "storage_bucket": "rosterz-79d6d.appspot.com"
+    "project_number": "506915263991",
+    "project_id": "rosterz-49607",
+    "storage_bucket": "rosterz-49607.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:705501133616:android:d78a0d82ddefbefaa626f5",
+        "mobilesdk_app_id": "1:506915263991:android:b36b4f35540ed328d8caf2",
         "android_client_info": {
           "package_name": "com.inso.rosterZ"
         }
       },
       "oauth_client": [
         {
-          "client_id": "705501133616-j53ocfsqfdthut4h1lp17s4p8b5ekkin.apps.googleusercontent.com",
+          "client_id": "506915263991-mka35qcvptnc2qei06d2qj09pe6m2epk.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBecsKM4ahGYWPF0B1vmpo6o2NbjhMfbIA"
+          "current_key": "AIzaSyCB-7aRBCxQzrwbnb0kXI2nr-xnCYISdNg"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "705501133616-j53ocfsqfdthut4h1lp17s4p8b5ekkin.apps.googleusercontent.com",
+              "client_id": "506915263991-mka35qcvptnc2qei06d2qj09pe6m2epk.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

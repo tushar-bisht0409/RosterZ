@@ -7,7 +7,6 @@ import 'package:rosterz/blocs/user_bloc.dart';
 import 'package:rosterz/main.dart';
 import 'package:rosterz/models/match_info.dart';
 import 'package:rosterz/models/user_info.dart';
-import 'package:rosterz/screens/result_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationScreen extends StatefulWidget {
@@ -258,16 +257,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 ),
                               ),
                               onTap: () {
-                                if (snapshot.data['msz'][index]['title'] ==
-                                    "Result") {
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (BuildContext context) =>
-                                          ResultScreen(
-                                              "show",
-                                              "",
-                                              snapshot.data['msz'][index]
-                                                  ['matchID'])));
-                                }
+                                // if (snapshot.data['msz'][index]['title'] ==
+                                //     "Result") {
+                                //   Navigator.of(context).push(MaterialPageRoute(
+                                //       builder: (BuildContext context) =>
+                                //           ResultScreen(
+                                //               "show",
+                                //               "",
+                                //               snapshot.data['msz'][index]
+                                //                   ['matchID'])));
+                                // }
                               },
                             );
                           });

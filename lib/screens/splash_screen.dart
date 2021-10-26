@@ -22,6 +22,7 @@ class _SplashScreenState extends State<SplashScreen> {
         userID = prefs.getString('userID');
         fcmToken = prefs.getString('fcmToken');
         notificationCount = prefs.getInt('notificationCount');
+        teamID = prefs.getString('teamID');
         if (notificationCount == null) {
           notificationCount = 0;
         }

@@ -67,9 +67,9 @@ class _FeedBackScreenState extends State<FeedBackScreen> {
                   width: ScreenUtil().setWidth(280),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(colors: [
-                      Colors.pink,
-                      Colors.deepPurple,
-                      Colors.lightBlue
+                      Colors.lightBlue,
+                      Colors.green,
+                      Colors.blue[700]
                     ]),
                     borderRadius:
                         BorderRadius.circular(ScreenUtil().setWidth(30)),
@@ -126,13 +126,13 @@ class _FeedBackScreenState extends State<FeedBackScreen> {
                   decoration: BoxDecoration(
                     borderRadius:
                         BorderRadius.circular(ScreenUtil().setWidth(30)),
-                    color: Colors.pink,
+                    color: Colors.greenAccent,
                   ),
                   child: Center(
                       child: TextButton(
                     child: Text(
                       "Send",
-                      style: TextStyle(color: Colors.white),
+                      style: TextStyle(color: Colors.black),
                     ),
                     onPressed: () {
                       if (feedback.text.trim() != "") {
@@ -143,8 +143,12 @@ class _FeedBackScreenState extends State<FeedBackScreen> {
                             userBloc.eventSink.add(userInfo);
                             feedback.text = "";
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text("FeedBack Sent Successfully"),
-                              backgroundColor: Colors.deepPurple,
+                              content: Text(
+                                "FeedBack Sent Successfully",
+                                style: TextStyle(color: Colors.black),
+                              ),
+                              duration: Duration(seconds: 3),
+                              backgroundColor: Colors.greenAccent,
                             ));
                           });
                         }
